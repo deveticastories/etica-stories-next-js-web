@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+/* Tailwind tokens — keep in sync with src/utils/Colors.ts */
+@theme inline {
+  --color-primary: #c91f32;
+  --color-primary-dark: #ae1f2f;
+  --color-primary-soft: #b83745;
+  --color-maroon: #650d0d;
+  --color-heading: #171717;
+  --color-body: #585151;
+  --color-muted: #828282;
+  --color-nav-inactive: #acacac;
+  --color-faq-question: #585858;
+  --color-footer-link: #717171;
+  --color-copyright: #363636;
+  --color-about-dim: #888888;
+  --color-light-text: #eeeeee;
+  --color-italic-text: #e6e6e6;
+  --color-border: #dcdcdc;
+  --color-select-border: #c9c9c9;
+  --color-beige: #efe4d9;
+  --color-dark-card: #333333;
+  --color-faq-closed: #f5f5f5;
+  --color-faq-open: #fff0f0;
+  --color-about-shape: #1c0407;
+  --color-mission-watermark: #f5f5f5;
+  --color-why-watermark: #1a1a1a;
+  --color-cross: #a42828;
+  --color-check: #0aaf46;
+
+  --font-sans: var(--font-dm-sans);
+  --font-heading: var(--font-space-grotesk);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #ffffff;
+  color: #171717;
+  font-family: var(--font-dm-sans), Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Hero scroll-expand: text turns white and logos go white as --hero-p goes 0 → 1 */
+.hero-ink {
+  color: color-mix(in srgb, #ffffff calc(var(--hero-p, 0) * 100%), var(--ink));
+}
+
+.hero-logo {
+  filter: brightness(calc(1 - var(--hero-p, 0))) invert(var(--hero-p, 0));
+}
