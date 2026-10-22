@@ -225,10 +225,13 @@ export default function ProcessSection() {
   const outerRef = useRef<HTMLElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
   const monitorRef = useRef<HTMLDivElement>(null);
+  const crtRef = useRef<HTMLDivElement>(null);
   const screenRef = useRef<HTMLDivElement>(null);
+  const screenContentRef = useRef<HTMLDivElement>(null);
   const glassRef = useRef<HTMLDivElement>(null);
   const wallpaperRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
+  const stageShadowRef = useRef<HTMLDivElement>(null);
   const blobRef = useRef<HTMLDivElement>(null);
   const fillRef = useRef<HTMLDivElement>(null);
   const headRef = useRef<HTMLDivElement>(null);
@@ -258,10 +261,13 @@ export default function ProcessSection() {
     const outer = outerRef.current;
     const sticky = stickyRef.current;
     const monitor = monitorRef.current;
+    const crt = crtRef.current;
     const screen = screenRef.current;
+    const screenContent = screenContentRef.current;
     const glass = glassRef.current;
     const wallpaper = wallpaperRef.current;
     const stage = stageRef.current;
+    const stageShadow = stageShadowRef.current;
     const blob = blobRef.current;
     const fill = fillRef.current;
     const head = headRef.current;
@@ -270,8 +276,8 @@ export default function ProcessSection() {
     const row = rowRef.current;
     const extras = extrasRef.current;
     if (
-      !animated || !outer || !sticky || !monitor || !screen || !glass || !wallpaper ||
-      !stage || !blob || !fill || !head || !headLines || !italic || !row || !extras
+      !animated || !outer || !sticky || !monitor || !crt || !screen || !screenContent || !glass ||
+      !wallpaper || !stage || !stageShadow || !blob || !fill || !head || !headLines || !italic || !row || !extras
     )
       return;
 
@@ -339,7 +345,7 @@ export default function ProcessSection() {
       stage.style.height = `${h}px`;
       stage.style.transform = `translate(-50%, -50%) translate(${winX}px, ${winY}px) scale(${winScale})`;
       stage.style.borderRadius = `0 0 ${winA * 18}px ${winA * 18}px`;
-      stage.style.boxShadow = `0 ${30 * winA}px ${80 * winA}px rgba(0,0,0,${0.35 * winA})`;
+      stageShadow.style.opacity = `${winA}`;
       wallpaper.style.transform = `scale(${lerp(1.12, 1, winA)})`;
 
       // 6. The desktop shrinks into a retro CRT: the screen settles to 4:3-ish and the
@@ -348,12 +354,26 @@ export default function ProcessSection() {
       const tilt = seg(p, 0.94, 1);
       const screenEnd = w / SCREEN_ASPECT;
       const screenH = lerp(h, screenEnd, mon);
+      // The monitor keeps a fixed size so its content is painted once; the screen's
+      // changing height is only a clip over it, and everything else is transforms.
+      const monitorH = Math.max(h, screenEnd);
+      const clipTop = (monitorH - screenH) / 2;
+      const glassTop = (monitorH - screenEnd) / 2;
       const bodyH = screenEnd + w * (MONITOR_TOP + MONITOR_BOTTOM);
       const endScale = Math.min(0.5, (h * 0.68) / bodyH, 0.56 / MONITOR_WIDTH);
       const monScale = lerp(1, endScale, mon);
       // Centre the whole monitor (not just its screen), nudged down to clear the fixed navbar.
       const monY = ((-w * (MONITOR_BOTTOM - MONITOR_TOP)) / 2 * endScale + NAV_CLEARANCE) * mon;
-      monitor.style.height = `${screenH}px`;
+      monitor.style.height = `${monitorH}px`;
+      crt.style.top = `${glassTop}px`;
+      crt.style.height = `${screenEnd}px`;
+      screen.style.top = `${clipTop}px`;
+      screen.style.height = `${screenH}px`;
+      screenContent.style.height = `${monitorH}px`;
+      screenContent.style.transform = `translateY(${-clipTop}px)`;
+      glass.style.top = `${glassTop}px`;
+      glass.style.height = `${screenEnd}px`;
+      glass.style.transform = `scaleY(${screenH / screenEnd})`;
       monitor.style.transform =
         `translate(-50%, -50%) translateY(${monY}px) scale(${monScale}) rotate(${tilt * -4}deg)`;
       screen.style.borderRadius = `${mon * 6}% / ${mon * 8}%`;
@@ -392,13 +412,98 @@ export default function ProcessSection() {
     <section ref={outerRef} className="relative bg-white" style={{ height: `${(PIN_SCREENS + 1) * 100}vh` }}>
       <div ref={stickyRef} className="sticky top-0 h-screen overflow-hidden bg-white">
         <div ref={monitorRef} className="absolute top-1/2 left-1/2 w-full will-change-transform">
-          <CrtBody />
+          <div ref={crtRef} className="absolute inset-x-0">
+            <CrtBody />
+          </div>
 
           {/* The screen: a desktop with the page open in a window. */}
-          <div ref={screenRef} className="absolute inset-0 overflow-hidden bg-[#1C56C8]">
-            <div ref={wallpaperRef} aria-hidden className="absolute inset-0">
-              <Wallpaper />
+          <div ref={screenRef} className="absolute inset-x-0 overflow-hidden bg-[#1C56C8]">
+            <div ref={screenContentRef} className="absolute inset-x-0 top-0 will-change-transform">
+              <div ref={wallpaperRef} aria-hidden className="absolute inset-0 will-change-transform">
+                <Wallpaper />
+              </div>
+              <div ref={stageRef} className="absolute top-1/2 left-1/2 bg-white will-change-transform">
+                <div
+                  ref={stageShadowRef}
+                  aria-hidden
+                  className="absolute inset-0 rounded-b-[18px] opacity-0 shadow-[0_30px_80px_rgba(0,0,0,0.35)] will-change-[opacity]"
+                />
+                {/* Window title bar, parked above the viewport while the page is full screen. */}
+                <div
+                  aria-hidden
+                  className="absolute bottom-full left-0 flex h-[64px] w-full items-center justify-center rounded-t-[18px] bg-white"
+                >
+                  <div className="absolute left-[24px] flex gap-[12px]">
+                    <span className="size-[18px] rounded-full bg-primary" />
+                    <span className="size-[18px] rounded-full bg-[#D9D9D9]" />
+                    <span className="size-[18px] rounded-full bg-[#D9D9D9]" />
+                  </div>
+                  <span className="font-heading text-[26px] font-medium text-primary">{story.windowTitle}</span>
+                </div>
+
+                <div className="absolute inset-0 overflow-hidden rounded-[inherit]">
+                  <div
+                    ref={fillRef}
+                    aria-hidden
+                    className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,#C91F32_35%,#DE5465_80%,#F09AA5_100%)] opacity-0"
+                  />
+                  <div
+                    ref={blobRef}
+                    aria-hidden
+                    className="absolute top-1/2 left-1/2 h-screen w-screen bg-[radial-gradient(closest-side,#C91F32_0%,#D23447_40%,#EE8E9A_70%,rgba(255,255,255,0)_100%)] will-change-transform"
+                  />
+
+                  <div ref={headRef} className="absolute inset-0 flex items-center justify-center px-[20px] opacity-0">
+                    <h2 className="text-center text-white">
+                      <span ref={headLinesRef} className="block will-change-[filter,opacity] font-heading text-[64px] leading-[66px] font-normal tracking-[-0.02em]">
+                        {story.titleLine1}
+                        <br />
+                        {story.titleLine2}
+                      </span>
+                      <span ref={italicRef} className="block will-change-[filter,opacity] font-serif text-[68px] leading-[80px] italic">
+                        {story.titleItalic}
+                      </span>
+                    </h2>
+                  </div>
+
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div ref={rowRef} className="relative">
+                      <div ref={extrasRef} className="opacity-0">
+                        <p className="absolute bottom-full left-1/2 mb-[30px] -translate-x-1/2 rounded-[50%] border border-white/70 px-[26px] py-[8px] font-serif text-[20px] whitespace-nowrap text-white italic">
+                          {story.label}
+                        </p>
+                        <div className="absolute top-full left-1/2 mt-[48px] w-[420px] -translate-x-1/2 text-center text-[14px] leading-[20px] text-white/85">
+                          <p className="font-serif text-[16px] italic">{story.noteTitle}</p>
+                          <p className="mt-[4px] font-light">{story.noteBody}</p>
+                        </div>
+                      </div>
+                      <div className="grid w-[1102px] grid-cols-3 gap-[15px] perspective-[1600px]">
+                        {Strings.process.map((step, i) => (
+                          <div
+                            key={step.title}
+                            ref={(el) => {
+                              cardRefs.current[i] = el;
+                            }}
+                            className="relative transform-3d will-change-transform"
+                          >
+                            <ProcessCard index={i} className="backface-hidden shadow-[0_20px_50px_rgba(60,0,10,0.25)]" />
+                            <CardBack index={i} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* CRT glass: vignette and scanlines fade in as the monitor appears. */}
+              <div
+                ref={glassRef}
+                aria-hidden
+                className="pointer-events-none absolute inset-x-0 rounded-[6%/8%] will-change-[transform,opacity] bg-[radial-gradient(ellipse_at_28%_12%,rgba(255,255,255,0.22),transparent_45%),repeating-linear-gradient(0deg,rgba(0,0,0,0.07)_0_2px,transparent_2px_5px)] opacity-0 shadow-[inset_0_0_140px_rgba(0,0,0,0.6),inset_0_0_0_10px_rgba(0,0,0,0.85)]"
+              />
             </div>
+
             <div aria-hidden className="absolute top-[6%] right-[2.5%] flex flex-col gap-[22px]">
               {story.desktopIcons.map((icon) => (
                 <DesktopIcon key={icon.label} label={icon.label} kind={icon.kind} />
@@ -408,82 +513,6 @@ export default function ProcessSection() {
               ref={clockRef}
               aria-hidden
               className="absolute right-[2.5%] bottom-[2.5%] text-[15px] text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]"
-            />
-
-            <div ref={stageRef} className="absolute top-1/2 left-1/2 bg-white will-change-transform">
-              {/* Window title bar, parked above the viewport while the page is full screen. */}
-              <div
-                aria-hidden
-                className="absolute bottom-full left-0 flex h-[64px] w-full items-center justify-center rounded-t-[18px] bg-white"
-              >
-                <div className="absolute left-[24px] flex gap-[12px]">
-                  <span className="size-[18px] rounded-full bg-primary" />
-                  <span className="size-[18px] rounded-full bg-[#D9D9D9]" />
-                  <span className="size-[18px] rounded-full bg-[#D9D9D9]" />
-                </div>
-                <span className="font-heading text-[26px] font-medium text-primary">{story.windowTitle}</span>
-              </div>
-
-              <div className="absolute inset-0 overflow-hidden rounded-[inherit]">
-                <div
-                  ref={fillRef}
-                  aria-hidden
-                  className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,#C91F32_35%,#DE5465_80%,#F09AA5_100%)] opacity-0"
-                />
-                <div
-                  ref={blobRef}
-                  aria-hidden
-                  className="absolute top-1/2 left-1/2 h-screen w-screen bg-[radial-gradient(closest-side,#C91F32_0%,#D23447_40%,#EE8E9A_70%,rgba(255,255,255,0)_100%)] will-change-transform"
-                />
-
-                <div ref={headRef} className="absolute inset-0 flex items-center justify-center px-[20px] opacity-0">
-                  <h2 className="text-center text-white">
-                    <span ref={headLinesRef} className="block font-heading text-[64px] leading-[66px] font-normal tracking-[-0.02em]">
-                      {story.titleLine1}
-                      <br />
-                      {story.titleLine2}
-                    </span>
-                    <span ref={italicRef} className="block font-serif text-[68px] leading-[80px] italic">
-                      {story.titleItalic}
-                    </span>
-                  </h2>
-                </div>
-
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div ref={rowRef} className="relative">
-                    <div ref={extrasRef} className="opacity-0">
-                      <p className="absolute bottom-full left-1/2 mb-[30px] -translate-x-1/2 rounded-[50%] border border-white/70 px-[26px] py-[8px] font-serif text-[20px] whitespace-nowrap text-white italic">
-                        {story.label}
-                      </p>
-                      <div className="absolute top-full left-1/2 mt-[48px] w-[420px] -translate-x-1/2 text-center text-[14px] leading-[20px] text-white/85">
-                        <p className="font-serif text-[16px] italic">{story.noteTitle}</p>
-                        <p className="mt-[4px] font-light">{story.noteBody}</p>
-                      </div>
-                    </div>
-                    <div className="grid w-[1102px] grid-cols-3 gap-[15px] perspective-[1600px]">
-                      {Strings.process.map((step, i) => (
-                        <div
-                          key={step.title}
-                          ref={(el) => {
-                            cardRefs.current[i] = el;
-                          }}
-                          className="relative transform-3d will-change-transform"
-                        >
-                          <ProcessCard index={i} className="backface-hidden shadow-[0_20px_50px_rgba(60,0,10,0.25)]" />
-                          <CardBack index={i} />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* CRT glass: vignette and scanlines fade in as the monitor appears. */}
-            <div
-              ref={glassRef}
-              aria-hidden
-              className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[radial-gradient(ellipse_at_28%_12%,rgba(255,255,255,0.22),transparent_45%),repeating-linear-gradient(0deg,rgba(0,0,0,0.07)_0_2px,transparent_2px_5px)] opacity-0 shadow-[inset_0_0_140px_rgba(0,0,0,0.6),inset_0_0_0_10px_rgba(0,0,0,0.85)]"
             />
           </div>
         </div>
