@@ -242,6 +242,7 @@ export default function ProcessSection() {
   const extrasRef = useRef<HTMLDivElement>(null);
   const [animated, setAnimated] = useState(false);
   const clockRef = useRef<HTMLDivElement>(null);
+  const desktopRef = useRef<HTMLDivElement>(null);
 
   // Desktop only, and never for reduced-motion users.
   useEffect(() => {
@@ -275,9 +276,10 @@ export default function ProcessSection() {
     const italic = italicRef.current;
     const row = rowRef.current;
     const extras = extrasRef.current;
+    const desktop = desktopRef.current;
     if (
       !animated || !outer || !sticky || !monitor || !crt || !screen || !screenContent || !glass ||
-      !wallpaper || !stage || !stageShadow || !blob || !fill || !head || !headLines || !italic || !row || !extras
+      !wallpaper || !stage || !stageShadow || !blob || !fill || !head || !headLines || !italic || !row || !extras || !desktop
     )
       return;
 
@@ -371,6 +373,9 @@ export default function ProcessSection() {
       screen.style.height = `${screenH}px`;
       screenContent.style.height = `${monitorH}px`;
       screenContent.style.transform = `translateY(${-clipTop}px)`;
+      // Desktop icons and clock track the visible screen area, underneath the window.
+      desktop.style.top = `${clipTop}px`;
+      desktop.style.height = `${screenH}px`;
       glass.style.top = `${glassTop}px`;
       glass.style.height = `${screenEnd}px`;
       glass.style.transform = `scaleY(${screenH / screenEnd})`;
@@ -421,6 +426,19 @@ export default function ProcessSection() {
             <div ref={screenContentRef} className="absolute inset-x-0 top-0 will-change-transform">
               <div ref={wallpaperRef} aria-hidden className="absolute inset-0 will-change-transform">
                 <Wallpaper />
+              </div>
+              {/* Desktop icons and clock live on the desktop, so the full-screen page
+                  covers them until it shrinks into a window. */}
+              <div ref={desktopRef} aria-hidden className="absolute inset-x-0">
+                <div className="absolute top-[6%] right-[2.5%] flex flex-col gap-[22px]">
+                  {story.desktopIcons.map((icon) => (
+                    <DesktopIcon key={icon.label} label={icon.label} kind={icon.kind} />
+                  ))}
+                </div>
+                <div
+                  ref={clockRef}
+                  className="absolute right-[2.5%] bottom-[2.5%] text-[15px] text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]"
+                />
               </div>
               <div ref={stageRef} className="absolute top-1/2 left-1/2 bg-white will-change-transform">
                 <div
@@ -504,16 +522,6 @@ export default function ProcessSection() {
               />
             </div>
 
-            <div aria-hidden className="absolute top-[6%] right-[2.5%] flex flex-col gap-[22px]">
-              {story.desktopIcons.map((icon) => (
-                <DesktopIcon key={icon.label} label={icon.label} kind={icon.kind} />
-              ))}
-            </div>
-            <div
-              ref={clockRef}
-              aria-hidden
-              className="absolute right-[2.5%] bottom-[2.5%] text-[15px] text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]"
-            />
           </div>
         </div>
       </div>

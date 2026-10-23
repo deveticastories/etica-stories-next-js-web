@@ -27,6 +27,32 @@
   --color-why-watermark: #1a1a1a;
   --color-cross: #a42828;
   --color-check: #0aaf46;
+  /* About page */
+  --color-service-card: #f7f7f6;
+  --color-about-mission-shape: #181818;
+  --color-about-divider: #e1e1e1;
+  --color-about-rule: #b0b0b0;
+
+  /* Services page */
+  --color-hero-subtitle: #ee364a;
+  --color-pillar-gray: #606060;
+  --color-pillar-pill: #6f6f6f;
+  --color-bullet-ring: #ffbdbd;
+  --color-bullet-dot: #dd4b5b;
+  --color-decor-stripe: #fbeeef;
+  --color-soft-card: #eeeeee;
+  --color-soft-body: #575050;
+  --color-icon-red: #a50012;
+  --color-strategy-watermark: #e9e7e8;
+
+  /* "Join our team" badge on the home Team section */
+  --animate-badge-spin: badge-spin 18s linear infinite;
+
+  @keyframes badge-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
 
   --font-sans: var(--font-dm-sans);
   --font-heading: var(--font-space-grotesk);

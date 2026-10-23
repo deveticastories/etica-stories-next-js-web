@@ -52,7 +52,7 @@ export default function TeamSection() {
           </div>
           <CircularBadge
             text={team.badge}
-            className="absolute -right-[81px] -bottom-[99px] size-[180px] max-lg:right-0 max-lg:-bottom-[90px] max-lg:size-[140px]"
+            className="absolute -right-[81px] -bottom-[99px] size-[180px] motion-safe:animate-badge-spin max-lg:right-0 max-lg:-bottom-[90px] max-lg:size-[140px]"
           />
         </div>
       </div>

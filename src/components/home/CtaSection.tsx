@@ -26,8 +26,25 @@ function BackgroundShapes() {
   );
 }
 
-export default function CtaSection() {
-  const { cta } = Strings;
+type CtaSectionProps = {
+  eyebrow?: string;
+  title?: string;
+  body?: string;
+  button?: string;
+  image?: string;
+  imageAlt?: string;
+  bodyClassName?: string;
+};
+
+export default function CtaSection({
+  eyebrow,
+  title = Strings.cta.title,
+  body = Strings.cta.body,
+  button = Strings.cta.button,
+  image = Images.ctaLaptop,
+  imageAlt = "Laptop showing an analytics dashboard",
+  bodyClassName = "max-w-[520px]",
+}: CtaSectionProps) {
 
   return (
     <section className="relative overflow-hidden bg-primary-dark px-[20px] py-[72px] lg:h-[662px] lg:px-0 lg:py-0">
@@ -35,21 +52,26 @@ export default function CtaSection() {
       <div className="relative mx-auto flex max-w-[1440px] flex-col items-center gap-[48px] lg:flex-row lg:items-start lg:gap-0 lg:pt-[76px] lg:pl-[71px]">
         <div className="relative aspect-[537/510] w-full max-w-[537px] shrink-0 overflow-hidden rounded-[16px] lg:w-[537px]">
           <Image
-            src={Images.ctaLaptop}
-            alt="Laptop showing an analytics dashboard"
+            src={image}
+            alt={imageAlt}
             fill
             sizes="(min-width: 1024px) 537px, 100vw"
             className="object-cover"
           />
         </div>
-        <div className="lg:ml-[122px] lg:pt-[129px]">
+        <div className={`lg:ml-[122px] ${eyebrow ? "lg:pt-[35px]" : "lg:pt-[129px]"}`}>
+          {eyebrow && (
+            <p className="mb-[12px] text-[18px] leading-[24px] font-normal tracking-[-0.01em] text-white lg:mb-[8px]">
+              {eyebrow}
+            </p>
+          )}
           <h2 className="max-w-[600px] font-heading text-[36px] leading-[40px] font-medium tracking-[-0.02em] text-white lg:text-[52px] lg:leading-[56px]">
-            {cta.title}
+            {title}
           </h2>
-          <p className="mt-[20px] max-w-[520px] text-[17px] leading-[26px] font-light tracking-[-0.01em] text-white lg:mt-[16px] lg:text-[18px]">
-            {cta.body}
+          <p className={`mt-[20px] ${bodyClassName} text-[17px] leading-[26px] font-light tracking-[-0.01em] text-white lg:mt-[16px] lg:text-[18px]`}>
+            {body}
           </p>
-          <Button label={cta.button} variant="light" className="mt-[28px] lg:mt-[27px]" />
+          <Button label={button} variant="light" className="mt-[28px] lg:mt-[27px]" />
         </div>
       </div>
     </section>

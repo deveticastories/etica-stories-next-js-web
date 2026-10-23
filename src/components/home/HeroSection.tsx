@@ -10,9 +10,8 @@ import Strings from "@/utils/Strings";
 const CLIENTS = [
   { name: "FAB", src: Images.clients.fab, width: 83, height: 29 },
   { name: "Saaz International", src: Images.clients.saaz, width: 83, height: 32 },
-  { name: "Emphz", src: Images.clients.emphz, width: 55, height: 60 },
+  { name: "Emphz", src: Images.clients.emphz, width: 125, height: 35 },
   { name: "Swaah Juniors", src: Images.clients.swaahJuniors, width: 106, height: 41 },
-  { name: "Emphz", src: Images.clients.emphz, width: 54, height: 60 },
   { name: "Introlines Merchant Exports", src: Images.clients.introlines, width: 163, height: 52 },
 ];
 

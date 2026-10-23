@@ -4,14 +4,16 @@ import { ArrowUpRightIcon } from "@/components/Icons";
 type ButtonProps = {
   label: string;
   href?: string;
-  variant?: "primary" | "light";
+  variant?: "primary" | "light" | "outline";
   size?: "md" | "lg";
   className?: string;
+  showArrow?: boolean;
 };
 
 const VARIANTS = {
   primary: "bg-primary text-white hover:bg-primary-dark",
   light: "bg-white text-heading hover:bg-white/90",
+  outline: "border border-white text-white hover:bg-white/10",
 };
 
 const SIZES = {
@@ -26,6 +28,7 @@ export default function Button({
   variant = "primary",
   size = "md",
   className = "",
+  showArrow = true,
 }: ButtonProps) {
   return (
     <Link
@@ -33,7 +36,7 @@ export default function Button({
       className={`inline-flex shrink-0 items-center gap-[4px] rounded-full text-[18px] leading-none tracking-[-0.01em] whitespace-nowrap transition-colors ${VARIANTS[variant]} ${SIZES[size]} ${className}`}
     >
       {label}
-      <ArrowUpRightIcon className="size-[11px]" />
+      {showArrow && <ArrowUpRightIcon className="size-[11px]" />}
     </Link>
   );
 }

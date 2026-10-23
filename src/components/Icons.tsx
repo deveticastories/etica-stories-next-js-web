@@ -246,3 +246,145 @@ export function YouTubeIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+// About page — service card icons
+const serviceStroke = {
+  stroke: Colors.primary,
+  strokeWidth: 1.6,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+} as const;
+
+export function BrandingIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
+      <rect x={2.5} y={4.5} width={19} height={15} rx={1} {...serviceStroke} />
+      <rect x={10} y={11} width={9} height={6} fill={Colors.primary} />
+    </svg>
+  );
+}
+
+export function GrowthChartIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
+      <path d="M3 3V21H21" {...serviceStroke} />
+      <path d="M7 16L11 11L14 14L20 7M20 7H16.5M20 7V10.5" {...serviceStroke} />
+    </svg>
+  );
+}
+
+export function SocialClickIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
+      <path d="M20.5 11A8.5 8.5 0 1 0 11 20.4" {...serviceStroke} />
+      <path d="M15.5 9.5A5 5 0 1 0 9.8 15.9" {...serviceStroke} />
+      <path d="M11 11L21 14.5L16.8 16.8L14.5 21L11 11Z" {...serviceStroke} />
+    </svg>
+  );
+}
+
+export function SeoIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
+      <circle cx={10} cy={10} r={6.5} {...serviceStroke} />
+      <path d="M15 15L21 21" {...serviceStroke} />
+      <path d="M6.5 12L9 9.5L11 11.5L14 8M14 8H11.5M14 8V10.5" {...serviceStroke} />
+      <path d="M17 3.5L20.5 7" {...serviceStroke} />
+    </svg>
+  );
+}
+
+export function CubeIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
+      <path d="M12 2.5L20.5 7.25V16.75L12 21.5L3.5 16.75V7.25L12 2.5Z" {...serviceStroke} />
+      <path d="M3.5 7.25L12 12L20.5 7.25M12 12V21.5" {...serviceStroke} />
+    </svg>
+  );
+}
+
+// About page — mission collage badges
+export function WebSolutionsIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
+      <rect x={1.5} y={3} width={21} height={17} rx={2} stroke={Colors.badgeWeb} strokeWidth={1.8} />
+      <path d="M1.5 8H22.5" stroke={Colors.badgeWeb} strokeWidth={1.8} />
+      <circle cx={5} cy={5.5} r={0.9} fill={Colors.badgeWeb} />
+      <circle cx={8} cy={5.5} r={0.9} fill={Colors.badgeWeb} />
+      <path d="M5 12H11M5 15.5H9" stroke={Colors.badgeWeb} strokeWidth={1.8} strokeLinecap="round" />
+      <circle cx={17} cy={15} r={3} fill={Colors.badgeWeb} />
+    </svg>
+  );
+}
+
+export function DigitalStrategyIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
+      <path
+        d="M12 21.5A9.5 9.5 0 1 0 2.5 12H7.5A4.5 4.5 0 1 1 12 16.5V21.5Z"
+        fill={Colors.badgeStrategy}
+      />
+      <rect x={7.5} y={16.5} width={4.5} height={4.5} fill={Colors.badgeStrategy} />
+      <rect x={3.5} y={16.5} width={3} height={3} fill={Colors.badgeStrategy} />
+    </svg>
+  );
+}
+
+export function GrowthMarketingIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
+      <path d="M3 12L9 6L13 10L21 2.5M21 2.5H16.5M21 2.5V7" {...serviceStroke} strokeWidth={2} />
+      <path d="M4 21V17M9 21V13M14 21V15M19 21V10" {...serviceStroke} strokeWidth={2} />
+    </svg>
+  );
+}
+
+// Services page — approach card icons (drawn in currentColor)
+const approachStroke = {
+  stroke: "currentColor",
+  strokeWidth: 1.6,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+} as const;
+
+export function TeamIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
+      <circle cx={6} cy={6} r={2} {...approachStroke} />
+      <circle cx={12} cy={5} r={2} {...approachStroke} />
+      <circle cx={18} cy={6} r={2} {...approachStroke} />
+      <path d="M3 11.5A3 3 0 0 1 6 10H8M21 11.5A3 3 0 0 0 18 10H16" {...approachStroke} />
+      <path d="M8 10.5A4 4 0 0 1 16 10.5V18A4 4 0 0 1 8 18V10.5Z" {...approachStroke} />
+      <path d="M3 12V17A3 3 0 0 0 7 19.8M21 12V17A3 3 0 0 1 17 19.8" {...approachStroke} />
+    </svg>
+  );
+}
+
+export function TargetIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
+      <path d="M20.5 12A8.5 8.5 0 1 1 12 3.5" {...approachStroke} />
+      <path d="M16.5 12A4.5 4.5 0 1 1 12 7.5" {...approachStroke} />
+      <path d="M12 12L19 5M16.5 4.5V7.5H19.5M19 5L21 3" {...approachStroke} />
+    </svg>
+  );
+}
+
+export function LocationIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
+      <path d="M12 21C12 21 18.5 14.8 18.5 9.5A6.5 6.5 0 0 0 5.5 9.5C5.5 14.8 12 21 12 21Z" {...approachStroke} />
+      <circle cx={12} cy={8.5} r={2.2} {...approachStroke} />
+      <path d="M8.5 15H15.5" {...approachStroke} />
+    </svg>
+  );
+}
+
+export function GrowthBoxIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
+      <rect x={3.5} y={3.5} width={17} height={17} rx={2} {...approachStroke} />
+      <path d="M7 15.5L10.5 11.5L13 14L17 9M17 9H14.5M17 9V11.5" {...approachStroke} />
+    </svg>
+  );
+}
