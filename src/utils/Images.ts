@@ -34,6 +34,10 @@ const Images = {
     ctaHandshake: "/images/services/cta-handshake.jpg",
   },
 
+  process: {
+    wallpaper: "/images/process/wallpaper.webp",
+  },
+
   clients: {
     fab: "/images/clients/fab.png",
     saaz: "/images/clients/saaz.png",

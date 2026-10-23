@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import Image from "next/image";
 import { CodeSearchIcon, DeployIcon, OptimizeIcon } from "@/components/Icons";
+import Images from "@/utils/Images";
 import Strings from "@/utils/Strings";
 
 // Per-card icon and text-box offsets measured from the design.
@@ -117,42 +119,18 @@ function DesktopIcon({ label, kind }: { label: string; kind: string }) {
   );
 }
 
-// A soft rolling-hills desktop wallpaper.
+// A soft rolling-hills desktop wallpaper, pre-rendered to an image: the blurred
+// clouds are far too slow to repaint as an SVG filter while the monitor zooms.
 function Wallpaper() {
   return (
-    <svg viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full" aria-hidden>
-      <defs>
-        <linearGradient id="ps-sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#1C56C8" />
-          <stop offset="0.45" stopColor="#4C8FE4" />
-          <stop offset="0.7" stopColor="#A9CDF2" />
-        </linearGradient>
-        <linearGradient id="ps-hill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#86C552" />
-          <stop offset="0.5" stopColor="#48982A" />
-          <stop offset="1" stopColor="#2C6B17" />
-        </linearGradient>
-        <linearGradient id="ps-hill-back" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#6FAE47" />
-          <stop offset="1" stopColor="#3F7F26" />
-        </linearGradient>
-        <filter id="ps-cloud" x="-20%" y="-50%" width="140%" height="200%">
-          <feGaussianBlur stdDeviation="14" />
-        </filter>
-      </defs>
-      <rect width="1600" height="1000" fill="url(#ps-sky)" />
-      <g fill="#fff" filter="url(#ps-cloud)">
-        <ellipse cx="300" cy="170" rx="120" ry="28" opacity="0.85" />
-        <ellipse cx="760" cy="90" rx="220" ry="34" opacity="0.6" />
-        <ellipse cx="1180" cy="230" rx="170" ry="60" opacity="0.9" />
-        <ellipse cx="960" cy="420" rx="260" ry="46" opacity="0.85" />
-        <ellipse cx="1350" cy="470" rx="220" ry="54" opacity="0.9" />
-        <ellipse cx="220" cy="300" rx="140" ry="30" opacity="0.7" />
-        <ellipse cx="640" cy="360" rx="120" ry="40" opacity="0.8" />
-      </g>
-      <path d="M0 640 C 380 560 820 600 1600 520 L1600 1000 L0 1000 Z" fill="url(#ps-hill-back)" />
-      <path d="M0 600 C 420 520 900 620 1600 760 L1600 1000 L0 1000 Z" fill="url(#ps-hill)" />
-    </svg>
+    <Image
+      src={Images.process.wallpaper}
+      alt=""
+      fill
+      loading="eager"
+      sizes="100vw"
+      className="object-cover"
+    />
   );
 }
 
@@ -229,6 +207,7 @@ export default function ProcessSection() {
   const screenRef = useRef<HTMLDivElement>(null);
   const screenContentRef = useRef<HTMLDivElement>(null);
   const glassRef = useRef<HTMLDivElement>(null);
+  const cornersRef = useRef<HTMLDivElement>(null);
   const wallpaperRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const stageShadowRef = useRef<HTMLDivElement>(null);
@@ -242,7 +221,7 @@ export default function ProcessSection() {
   const extrasRef = useRef<HTMLDivElement>(null);
   const [animated, setAnimated] = useState(false);
   const clockRef = useRef<HTMLDivElement>(null);
-  const desktopRef = useRef<HTMLDivElement>(null);
+  const iconsRef = useRef<HTMLDivElement>(null);
 
   // Desktop only, and never for reduced-motion users.
   useEffect(() => {
@@ -266,6 +245,7 @@ export default function ProcessSection() {
     const screen = screenRef.current;
     const screenContent = screenContentRef.current;
     const glass = glassRef.current;
+    const corners = cornersRef.current;
     const wallpaper = wallpaperRef.current;
     const stage = stageRef.current;
     const stageShadow = stageShadowRef.current;
@@ -276,24 +256,23 @@ export default function ProcessSection() {
     const italic = italicRef.current;
     const row = rowRef.current;
     const extras = extrasRef.current;
-    const desktop = desktopRef.current;
+    const icons = iconsRef.current;
+    const clock = clockRef.current;
     if (
       !animated || !outer || !sticky || !monitor || !crt || !screen || !screenContent || !glass ||
-      !wallpaper || !stage || !stageShadow || !blob || !fill || !head || !headLines || !italic || !row || !extras || !desktop
+      !wallpaper || !stage || !stageShadow || !blob || !fill || !head || !headLines || !italic || !row || !extras || !icons || !clock || !corners
     )
       return;
 
     let frame = 0;
 
-    if (clockRef.current) {
-      clockRef.current.textContent = new Date().toLocaleString("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-      });
-    }
+    clock.textContent = new Date().toLocaleString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
 
     const render = () => {
       frame = 0;
@@ -346,7 +325,9 @@ export default function ProcessSection() {
       stage.style.width = `${w}px`;
       stage.style.height = `${h}px`;
       stage.style.transform = `translate(-50%, -50%) translate(${winX}px, ${winY}px) scale(${winScale})`;
-      stage.style.borderRadius = `0 0 ${winA * 18}px ${winA * 18}px`;
+      // Stepped, so the rounded clip over the page repaints a handful of times rather than every frame.
+      const winRadius = Math.round(winA * 9) * 2;
+      stage.style.borderRadius = `0 0 ${winRadius}px ${winRadius}px`;
       stageShadow.style.opacity = `${winA}`;
       wallpaper.style.transform = `scale(${lerp(1.12, 1, winA)})`;
 
@@ -374,14 +355,18 @@ export default function ProcessSection() {
       screenContent.style.height = `${monitorH}px`;
       screenContent.style.transform = `translateY(${-clipTop}px)`;
       // Desktop icons and clock track the visible screen area, underneath the window.
-      desktop.style.top = `${clipTop}px`;
-      desktop.style.height = `${screenH}px`;
+      // Moved with transforms only, so the zoom never triggers layout.
+      icons.style.transform = `translateY(${clipTop + screenH * 0.06}px)`;
+      clock.style.transform = `translateY(${clipTop + screenH * 0.975}px) translateY(-100%)`;
       glass.style.top = `${glassTop}px`;
       glass.style.height = `${screenEnd}px`;
       glass.style.transform = `scaleY(${screenH / screenEnd})`;
+      corners.style.top = `${glassTop}px`;
+      corners.style.height = `${screenEnd}px`;
+      corners.style.transform = glass.style.transform;
+      corners.style.setProperty("--mon", `${mon}`);
       monitor.style.transform =
         `translate(-50%, -50%) translateY(${monY}px) scale(${monScale}) rotate(${tilt * -4}deg)`;
-      screen.style.borderRadius = `${mon * 6}% / ${mon * 8}%`;
       glass.style.opacity = `${mon}`;
     };
 
@@ -417,7 +402,7 @@ export default function ProcessSection() {
     <section ref={outerRef} className="relative bg-white" style={{ height: `${(PIN_SCREENS + 1) * 100}vh` }}>
       <div ref={stickyRef} className="sticky top-0 h-screen overflow-hidden bg-white">
         <div ref={monitorRef} className="absolute top-1/2 left-1/2 w-full will-change-transform">
-          <div ref={crtRef} className="absolute inset-x-0">
+          <div ref={crtRef} className="absolute inset-x-0 will-change-transform">
             <CrtBody />
           </div>
 
@@ -429,27 +414,27 @@ export default function ProcessSection() {
               </div>
               {/* Desktop icons and clock live on the desktop, so the full-screen page
                   covers them until it shrinks into a window. */}
-              <div ref={desktopRef} aria-hidden className="absolute inset-x-0">
-                <div className="absolute top-[6%] right-[2.5%] flex flex-col gap-[22px]">
+              <div aria-hidden>
+                <div ref={iconsRef} className="absolute top-0 right-[2.5%] flex flex-col gap-[22px] will-change-transform">
                   {story.desktopIcons.map((icon) => (
                     <DesktopIcon key={icon.label} label={icon.label} kind={icon.kind} />
                   ))}
                 </div>
                 <div
                   ref={clockRef}
-                  className="absolute right-[2.5%] bottom-[2.5%] text-[15px] text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]"
+                  className="absolute top-0 right-[2.5%] text-[15px] will-change-transform text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]"
                 />
               </div>
               <div ref={stageRef} className="absolute top-1/2 left-1/2 bg-white will-change-transform">
                 <div
                   ref={stageShadowRef}
                   aria-hidden
-                  className="absolute inset-0 rounded-b-[18px] opacity-0 shadow-[0_30px_80px_rgba(0,0,0,0.35)] will-change-[opacity]"
+                  className="absolute inset-0 rounded-b-[18px] opacity-0 shadow-[0_24px_48px_rgba(0,0,0,0.3)] will-change-[transform,opacity]"
                 />
                 {/* Window title bar, parked above the viewport while the page is full screen. */}
                 <div
                   aria-hidden
-                  className="absolute bottom-full left-0 flex h-[64px] w-full items-center justify-center rounded-t-[18px] bg-white"
+                  className="absolute bottom-full left-0 flex h-[64px] w-full items-center justify-center rounded-t-[18px] bg-white will-change-transform"
                 >
                   <div className="absolute left-[24px] flex gap-[12px]">
                     <span className="size-[18px] rounded-full bg-primary" />
@@ -518,8 +503,17 @@ export default function ProcessSection() {
               <div
                 ref={glassRef}
                 aria-hidden
-                className="pointer-events-none absolute inset-x-0 rounded-[6%/8%] will-change-[transform,opacity] bg-[radial-gradient(ellipse_at_28%_12%,rgba(255,255,255,0.22),transparent_45%),repeating-linear-gradient(0deg,rgba(0,0,0,0.07)_0_2px,transparent_2px_5px)] opacity-0 shadow-[inset_0_0_140px_rgba(0,0,0,0.6),inset_0_0_0_10px_rgba(0,0,0,0.85)]"
+                className="pointer-events-none absolute inset-x-0 rounded-[6%/8%] will-change-[transform,opacity] bg-[radial-gradient(ellipse_at_28%_12%,rgba(255,255,255,0.22),transparent_45%),radial-gradient(ellipse_at_center,transparent_58%,rgba(0,0,0,0.5)_100%),repeating-linear-gradient(0deg,rgba(0,0,0,0.07)_0_2px,transparent_2px_5px)] opacity-0 shadow-[inset_0_0_0_10px_rgba(0,0,0,0.85)]"
               />
+              <div ref={cornersRef} aria-hidden className="pointer-events-none absolute inset-x-0 will-change-transform">
+                {/* Rounded screen corners, painted in the bezel colour and grown with the zoom.
+                    The screen itself stays a plain rectangle, so its clip never needs a mask
+                    repainted while it resizes. */}
+                <span className="absolute top-0 left-0 origin-top-left h-[8%] w-[6%] scale-(--mon) will-change-transform bg-[radial-gradient(ellipse_100%_100%_at_100%_100%,transparent_calc(100%-1px),#5680BD_100%)]" />
+                <span className="absolute top-0 right-0 origin-top-right h-[8%] w-[6%] scale-(--mon) will-change-transform bg-[radial-gradient(ellipse_100%_100%_at_0%_100%,transparent_calc(100%-1px),#5680BD_100%)]" />
+                <span className="absolute bottom-0 left-0 origin-bottom-left h-[8%] w-[6%] scale-(--mon) will-change-transform bg-[radial-gradient(ellipse_100%_100%_at_100%_0%,transparent_calc(100%-1px),#6A92CB_100%)]" />
+                <span className="absolute right-0 bottom-0 origin-bottom-right h-[8%] w-[6%] scale-(--mon) will-change-transform bg-[radial-gradient(ellipse_100%_100%_at_0%_0%,transparent_calc(100%-1px),#6A92CB_100%)]" />
+              </div>
             </div>
 
           </div>
