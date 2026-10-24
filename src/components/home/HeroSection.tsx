@@ -181,20 +181,30 @@ export default function HeroSection() {
           <p className="hero-ink text-center text-[18px] leading-[24px] font-light tracking-[-0.01em] [--ink:#171717] lg:translate-x-[-14px]">
             {hero.trustedBy}
           </p>
-          <ul className="mx-auto mt-[32px] flex max-w-[1147px] flex-wrap items-center justify-center gap-x-[48px] gap-y-[24px] lg:mt-[32px] lg:translate-x-[-14px] lg:flex-nowrap lg:justify-between lg:gap-0">
-            {CLIENTS.map((client, i) => (
-              <li key={i}>
-                <Image
-                  src={client.src}
-                  alt={client.name}
-                  width={client.width}
-                  height={client.height}
-                  className="hero-logo"
-                  style={{ width: client.width, height: client.height }}
-                />
-              </li>
-            ))}
-          </ul>
+          {/* Marquee: the track holds two identical halves and slides -50%, so the loop is seamless.
+              Each half repeats the logo set so it always spans wider than the viewport. */}
+          <div className="marquee mx-auto mt-[32px] max-w-[1147px] overflow-hidden lg:translate-x-[-14px]">
+            <ul className="marquee-track flex w-max items-center">
+              {[0, 1].map((half) =>
+                [...CLIENTS, ...CLIENTS].map((client, i) => (
+                  <li
+                    key={`${half}-${i}`}
+                    aria-hidden={half === 1 || i >= CLIENTS.length || undefined}
+                    className="shrink-0 px-[24px] lg:px-[48px]"
+                  >
+                    <Image
+                      src={client.src}
+                      alt={client.name}
+                      width={client.width}
+                      height={client.height}
+                      className="hero-logo max-w-none"
+                      style={{ width: client.width, height: client.height }}
+                    />
+                  </li>
+                ))
+              )}
+            </ul>
+          </div>
         </div>
       </div>
     </section>
