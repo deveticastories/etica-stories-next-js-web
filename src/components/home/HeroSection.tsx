@@ -30,6 +30,10 @@ const clamp = (v: number) => Math.min(1, Math.max(0, v));
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const ease = (t: number) => t * t * (3 - 2 * t);
 
+// The promo ends with the ETICA logo reveal on white (same as the intro). Expanded behind the
+// dark overlay and hero text it reads as a grey, broken frame, so loop back before it starts.
+const PROMO_LOOP_END = 12.6;
+
 type Mode = "off" | "mobile" | "desktop";
 
 // Starts only once the logo intro has finished. Muted + playsInline are required for inline
@@ -41,9 +45,33 @@ function HeroVideo({ label }: { label?: string }) {
     const video = ref.current;
     if (!video) return;
     video.muted = true;
-    return onIntroDone(() => {
+
+    const restartIfPastEnd = () => {
+      if (video.currentTime >= PROMO_LOOP_END) {
+        video.currentTime = 0;
+        video.play().catch(() => {});
+      }
+    };
+
+    // Per-frame check where supported; `timeupdate` only fires ~4x/sec and would let the wipe show.
+    let frameHandle = 0;
+    const onFrame = () => {
+      restartIfPastEnd();
+      frameHandle = video.requestVideoFrameCallback(onFrame);
+    };
+    const perFrame = typeof video.requestVideoFrameCallback === "function";
+    if (perFrame) frameHandle = video.requestVideoFrameCallback(onFrame);
+    else video.addEventListener("timeupdate", restartIfPastEnd);
+
+    const unsubscribe = onIntroDone(() => {
       video.play().catch(() => {});
     });
+
+    return () => {
+      unsubscribe();
+      if (perFrame) video.cancelVideoFrameCallback(frameHandle);
+      else video.removeEventListener("timeupdate", restartIfPastEnd);
+    };
   }, []);
 
   return (
