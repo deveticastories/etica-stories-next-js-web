@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Videos from "@/utils/Videos";
+import { markIntroDone, markIntroPlaying } from "@/utils/introState";
 
 const INTRO_MS = 4000;
 const FADE_MS = 600;
@@ -12,6 +13,7 @@ export default function IntroVideo() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
+    markIntroPlaying();
     const root = document.documentElement;
     root.style.overflow = "hidden";
     window.scrollTo(0, 0);
@@ -28,6 +30,7 @@ export default function IntroVideo() {
 
   useEffect(() => {
     if (phase !== "fading") return;
+    markIntroDone();
     document.documentElement.style.overflow = "";
     const timer = setTimeout(() => setPhase("done"), FADE_MS);
     return () => clearTimeout(timer);
