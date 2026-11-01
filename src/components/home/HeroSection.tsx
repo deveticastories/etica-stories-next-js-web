@@ -201,11 +201,13 @@ export default function HeroSection() {
         w: slotRect.width,
         h: slotRect.height,
       };
+      // Cover the whole pinned hero, not just the viewport: on screens shorter than the 979px desktop
+      // hero the text below the fold has already turned white and would vanish on a white strip.
       const end = {
         x: EDGE_GAP,
         y: EDGE_GAP,
         w: stickyRect.width - EDGE_GAP * 2,
-        h: Math.min(window.innerHeight, stickyRect.height) - EDGE_GAP * 2,
+        h: stickyRect.height - EDGE_GAP * 2,
       };
 
       media.style.left = `${lerp(start.x, end.x, t)}px`;
