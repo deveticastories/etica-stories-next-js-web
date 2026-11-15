@@ -5,6 +5,7 @@ import Image from "next/image";
 import { CodeSearchIcon, DeployIcon, OptimizeIcon } from "@/components/Icons";
 import Images from "@/utils/Images";
 import Strings from "@/utils/Strings";
+import { isLowEndDevice } from "@/utils/device";
 
 // Per-card icon and text-box offsets measured from the design.
 const CARDS = [
@@ -49,7 +50,7 @@ const seg = (p: number, from: number, to: number) => ease(clamp((p - from) / (to
 function ProcessCard({ index, className = "" }: { index: number; className?: string }) {
   const step = Strings.process[index];
   return (
-    <article className={`rounded-[16px] bg-white px-[30px] pt-[31px] pb-[32px] lg:h-[443px] lg:pr-0 ${className}`}>
+    <article className={`rounded-[16px] bg-white px-[30px] pt-[31px] pb-[32px] lg:min-h-[443px] lg:pr-0 ${className}`}>
       <div className="flex h-[47px] items-start">{CARDS[index].icon}</div>
       <div className={`pl-[6px] ${CARDS[index].textOffset}`}>
         <h3 className="mt-[50px] text-[22px] leading-[28px] font-normal tracking-[-0.02em] text-heading">
@@ -223,11 +224,13 @@ export default function ProcessSection() {
   const clockRef = useRef<HTMLDivElement>(null);
   const iconsRef = useRef<HTMLDivElement>(null);
 
-  // Desktop only, and never for reduced-motion users.
+  // Desktop screens tall enough for the scene only, never for reduced-motion users or low-end
+  // devices (the stacked full-screen layers exhaust weak GPUs and the page flashes white).
   useEffect(() => {
-    const desktop = window.matchMedia("(min-width: 1024px)");
+    const desktop = window.matchMedia("(min-width: 1024px) and (min-height: 640px)");
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setAnimated(desktop.matches && !reduced.matches);
+    const lowEnd = isLowEndDevice();
+    const update = () => setAnimated(desktop.matches && !reduced.matches && !lowEnd);
     update();
     desktop.addEventListener("change", update);
     reduced.addEventListener("change", update);
@@ -292,14 +295,18 @@ export default function ProcessSection() {
       const blobY = lerp(lerp(h * 0.85, h * 0.32, rise), 0, flood);
       const blobScale = lerp(lerp(0.75, 1.15, rise), 2.6, flood);
       blob.style.transform = `translate(-50%, -50%) translateY(${blobY}px) scale(${blobScale})`;
-      fill.style.opacity = `${seg(p, 0.16, 0.28)}`;
+      const fillOpacity = seg(p, 0.16, 0.28);
+      fill.style.opacity = `${fillOpacity}`;
+      // Once the flat fill covers it, drop the oversized gradient layer to free GPU memory.
+      blob.style.visibility = fillOpacity >= 1 ? "hidden" : "visible";
 
       // 3. Headline softens behind the incoming cards.
       const soft = seg(p, 0.22, 0.34);
-      headLines.style.filter = `blur(${soft * 7}px)`;
+      // Whole-pixel blur steps, so the text re-rasterises a few times instead of every frame.
+      headLines.style.filter = soft > 0 ? `blur(${Math.round(soft * 7)}px)` : "none";
       headLines.style.opacity = `${1 - soft * 0.35}`;
       const softItalic = seg(p, 0.46, 0.58);
-      italic.style.filter = `blur(${softItalic * 6}px)`;
+      italic.style.filter = softItalic > 0 ? `blur(${Math.round(softItalic * 6)}px)` : "none";
       italic.style.opacity = `${1 - softItalic * 0.45}`;
 
       // 4. Cards fly up from below and flip from their red back to the white front.
@@ -388,8 +395,16 @@ export default function ProcessSection() {
 
   if (!animated) {
     return (
-      <section className="bg-beige px-[20px] py-[80px] lg:flex lg:h-[972px] lg:items-center lg:justify-center lg:py-0">
-        <div className="mx-auto grid max-w-[1102px] grid-cols-1 gap-[15px] md:grid-cols-3 lg:w-[1102px]">
+      <section className="bg-beige px-[20px] py-[80px] lg:py-[120px]">
+        <h2 className="mx-auto mb-[48px] max-w-[760px] text-center text-heading lg:mb-[64px]">
+          <span className="block font-heading text-[34px] leading-[38px] font-normal tracking-[-0.02em] sm:text-[48px] sm:leading-[52px]">
+            {story.titleLine1} {story.titleLine2}
+          </span>
+          <span className="block font-serif text-[36px] leading-[48px] text-primary italic sm:text-[52px] sm:leading-[64px]">
+            {story.titleItalic}
+          </span>
+        </h2>
+        <div className="mx-auto grid w-full max-w-[1102px] grid-cols-1 gap-[15px] md:grid-cols-3">
           {Strings.process.map((step, i) => (
             <ProcessCard key={step.title} index={i} />
           ))}
@@ -402,7 +417,7 @@ export default function ProcessSection() {
     <section ref={outerRef} className="relative bg-white" style={{ height: `${(PIN_SCREENS + 1) * 100}vh` }}>
       <div ref={stickyRef} className="sticky top-0 h-screen overflow-hidden bg-white">
         <div ref={monitorRef} className="absolute top-1/2 left-1/2 w-full will-change-transform">
-          <div ref={crtRef} className="absolute inset-x-0 will-change-transform">
+          <div ref={crtRef} className="absolute inset-x-0">
             <CrtBody />
           </div>
 
@@ -415,26 +430,26 @@ export default function ProcessSection() {
               {/* Desktop icons and clock live on the desktop, so the full-screen page
                   covers them until it shrinks into a window. */}
               <div aria-hidden>
-                <div ref={iconsRef} className="absolute top-0 right-[2.5%] flex flex-col gap-[22px] will-change-transform">
+                <div ref={iconsRef} className="absolute top-0 right-[2.5%] flex flex-col gap-[22px]">
                   {story.desktopIcons.map((icon) => (
                     <DesktopIcon key={icon.label} label={icon.label} kind={icon.kind} />
                   ))}
                 </div>
                 <div
                   ref={clockRef}
-                  className="absolute top-0 right-[2.5%] text-[15px] will-change-transform text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]"
+                  className="absolute top-0 right-[2.5%] text-[15px] text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]"
                 />
               </div>
               <div ref={stageRef} className="absolute top-1/2 left-1/2 bg-white will-change-transform">
                 <div
                   ref={stageShadowRef}
                   aria-hidden
-                  className="absolute inset-0 rounded-b-[18px] opacity-0 shadow-[0_24px_48px_rgba(0,0,0,0.3)] will-change-[transform,opacity]"
+                  className="absolute inset-0 rounded-b-[18px] opacity-0 shadow-[0_24px_48px_rgba(0,0,0,0.3)]"
                 />
                 {/* Window title bar, parked above the viewport while the page is full screen. */}
                 <div
                   aria-hidden
-                  className="absolute bottom-full left-0 flex h-[64px] w-full items-center justify-center rounded-t-[18px] bg-white will-change-transform"
+                  className="absolute bottom-full left-0 flex h-[64px] w-full items-center justify-center rounded-t-[18px] bg-white"
                 >
                   <div className="absolute left-[24px] flex gap-[12px]">
                     <span className="size-[18px] rounded-full bg-primary" />
@@ -458,12 +473,12 @@ export default function ProcessSection() {
 
                   <div ref={headRef} className="absolute inset-0 flex items-center justify-center px-[20px] opacity-0">
                     <h2 className="text-center text-white">
-                      <span ref={headLinesRef} className="block will-change-[filter,opacity] font-heading text-[64px] leading-[66px] font-normal tracking-[-0.02em]">
+                      <span ref={headLinesRef} className="block font-heading text-[64px] leading-[66px] font-normal tracking-[-0.02em]">
                         {story.titleLine1}
                         <br />
                         {story.titleLine2}
                       </span>
-                      <span ref={italicRef} className="block will-change-[filter,opacity] font-serif text-[68px] leading-[80px] italic">
+                      <span ref={italicRef} className="block font-serif text-[68px] leading-[80px] italic">
                         {story.titleItalic}
                       </span>
                     </h2>
@@ -509,10 +524,10 @@ export default function ProcessSection() {
                 {/* Rounded screen corners, painted in the bezel colour and grown with the zoom.
                     The screen itself stays a plain rectangle, so its clip never needs a mask
                     repainted while it resizes. */}
-                <span className="absolute top-0 left-0 origin-top-left h-[8%] w-[6%] scale-(--mon) will-change-transform bg-[radial-gradient(ellipse_100%_100%_at_100%_100%,transparent_calc(100%-1px),#5680BD_100%)]" />
-                <span className="absolute top-0 right-0 origin-top-right h-[8%] w-[6%] scale-(--mon) will-change-transform bg-[radial-gradient(ellipse_100%_100%_at_0%_100%,transparent_calc(100%-1px),#5680BD_100%)]" />
-                <span className="absolute bottom-0 left-0 origin-bottom-left h-[8%] w-[6%] scale-(--mon) will-change-transform bg-[radial-gradient(ellipse_100%_100%_at_100%_0%,transparent_calc(100%-1px),#6A92CB_100%)]" />
-                <span className="absolute right-0 bottom-0 origin-bottom-right h-[8%] w-[6%] scale-(--mon) will-change-transform bg-[radial-gradient(ellipse_100%_100%_at_0%_0%,transparent_calc(100%-1px),#6A92CB_100%)]" />
+                <span className="absolute top-0 left-0 origin-top-left h-[8%] w-[6%] scale-(--mon) bg-[radial-gradient(ellipse_100%_100%_at_100%_100%,transparent_calc(100%-1px),#5680BD_100%)]" />
+                <span className="absolute top-0 right-0 origin-top-right h-[8%] w-[6%] scale-(--mon) bg-[radial-gradient(ellipse_100%_100%_at_0%_100%,transparent_calc(100%-1px),#5680BD_100%)]" />
+                <span className="absolute bottom-0 left-0 origin-bottom-left h-[8%] w-[6%] scale-(--mon) bg-[radial-gradient(ellipse_100%_100%_at_100%_0%,transparent_calc(100%-1px),#6A92CB_100%)]" />
+                <span className="absolute right-0 bottom-0 origin-bottom-right h-[8%] w-[6%] scale-(--mon) bg-[radial-gradient(ellipse_100%_100%_at_0%_0%,transparent_calc(100%-1px),#6A92CB_100%)]" />
               </div>
             </div>
 

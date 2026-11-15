@@ -47,10 +47,10 @@ export default function CtaSection({
 }: CtaSectionProps) {
 
   return (
-    <section className="relative overflow-hidden bg-primary-dark px-[20px] py-[72px] lg:h-[662px] lg:px-0 lg:py-0">
+    <section className="relative overflow-hidden bg-primary-dark px-[20px] py-[72px] xl:min-h-[662px] lg:px-[48px] lg:py-0 lg:pb-[76px] xl:px-0">
       <BackgroundShapes />
-      <div className="relative mx-auto flex max-w-[1440px] flex-col items-center gap-[48px] lg:flex-row lg:items-start lg:gap-0 lg:pt-[76px] lg:pl-[71px]">
-        <div className="relative aspect-[537/510] w-full max-w-[537px] shrink-0 overflow-hidden rounded-[16px] lg:w-[537px]">
+      <div className="relative mx-auto flex max-w-[1440px] flex-col items-center gap-[48px] lg:flex-row lg:items-start lg:gap-0 lg:pt-[76px] xl:pl-[71px]">
+        <div className="relative aspect-[537/510] w-full max-w-[537px] shrink-0 overflow-hidden rounded-[16px] lg:w-[44%] xl:w-[537px]">
           <Image
             src={image}
             alt={imageAlt}
@@ -59,7 +59,7 @@ export default function CtaSection({
             className="object-cover"
           />
         </div>
-        <div className={`lg:ml-[122px] ${eyebrow ? "lg:pt-[35px]" : "lg:pt-[129px]"}`}>
+        <div className={`min-w-0 lg:ml-[56px] xl:ml-[122px] ${eyebrow ? "lg:pt-[35px]" : "lg:pt-[129px]"}`}>
           {eyebrow && (
             <p className="mb-[12px] text-[18px] leading-[24px] font-normal tracking-[-0.01em] text-white lg:mb-[8px]">
               {eyebrow}

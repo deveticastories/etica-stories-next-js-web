@@ -21,7 +21,7 @@ export default function Navbar({ activeHref = "/" }: NavbarProps) {
           <Logo className="h-[32px] w-auto lg:h-[36px]" />
         </Link>
 
-        <ul className="ml-[195px] hidden items-center gap-[33px] lg:flex">
+        <ul className="ml-[clamp(40px,14vw,195px)] hidden items-center gap-[33px] lg:flex">
           {Strings.nav.links.map((link) => (
             <li key={link.label}>
               <Link

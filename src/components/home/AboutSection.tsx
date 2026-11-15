@@ -22,9 +22,9 @@ export default function AboutSection() {
   const { about } = Strings;
 
   return (
-    <section className="relative overflow-hidden bg-black py-[100px] lg:h-[866px] lg:py-0">
+    <section className="relative overflow-hidden bg-black py-[100px] xl:min-h-[866px] lg:py-0 lg:pb-[120px]">
       <DiagonalShapes />
-      <div className="relative mx-auto max-w-[1440px] px-[20px] lg:pt-[226px] lg:pl-[218px]">
+      <div className="relative mx-auto max-w-[1440px] px-[20px] lg:pt-[226px] lg:pr-[48px] lg:pl-[clamp(48px,15vw,218px)]">
         <p className="max-w-[1000px] text-[24px] leading-[38px] font-light tracking-[-0.025em] lg:text-[36px] lg:leading-[55px]">
           <span className="text-white">{about.highlight} </span>
           <span className="text-about-dim">{about.rest}</span>

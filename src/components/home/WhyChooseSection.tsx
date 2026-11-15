@@ -20,7 +20,7 @@ export default function WhyChooseSection() {
   const { whyChoose } = Strings;
 
   return (
-    <section className="relative overflow-hidden bg-black px-[20px] pt-[96px] pb-[140px] lg:h-[1040px] lg:px-0 lg:pt-[125px] lg:pb-0">
+    <section className="relative overflow-hidden bg-black px-[20px] pt-[96px] pb-[140px] xl:min-h-[1040px] lg:px-[32px] lg:pt-[125px] lg:pb-[100px] xl:px-0">
       <span
         aria-hidden
         className="pointer-events-none absolute bottom-[-40px] left-[-100px] bg-[linear-gradient(180deg,#000000_10%,#070707_13%,#1C1C1C_74%)] bg-clip-text font-sans text-[160px] leading-none font-[550] tracking-[-0.02em] whitespace-nowrap text-transparent select-none lg:bottom-[-97px] lg:left-[-234px] lg:text-[368px]"
@@ -40,7 +40,7 @@ export default function WhyChooseSection() {
         </p>
       </div>
 
-      <div className="relative mx-auto mt-[56px] flex max-w-[940px] flex-col items-center gap-[32px] lg:mt-[171px] lg:translate-x-[-12px] lg:flex-row lg:items-stretch lg:gap-[120px]">
+      <div className="relative mx-auto mt-[56px] flex max-w-[940px] flex-col items-center gap-[32px] lg:mt-[171px] lg:translate-x-[-12px] lg:flex-row lg:items-stretch lg:gap-[64px] xl:gap-[120px]">
         <div className="relative w-full max-w-[416px] lg:w-[416px]">
           <div className="absolute -top-[56px] left-[95px] hidden lg:block">
             <CurvedArrow className="h-[60px] w-[160px]" />

@@ -28,9 +28,9 @@ export default function TeamSection() {
   const { team } = Strings;
 
   return (
-    <section className="bg-white px-[20px] pt-[96px] lg:px-0 lg:pt-[126px]">
-      <div className="mx-auto flex max-w-[1440px] flex-col gap-[48px] lg:flex-row lg:items-start lg:justify-between lg:pr-[191px] lg:pl-[130px]">
-        <div className="lg:pt-[153px]">
+    <section className="overflow-x-clip bg-white px-[20px] pt-[96px] lg:px-0 lg:pt-[126px]">
+      <div className="mx-auto flex max-w-[1440px] flex-col gap-[48px] lg:flex-row lg:items-start lg:justify-between lg:px-[48px] xl:pr-[191px] xl:pl-[130px]">
+        <div className="min-w-0 lg:flex-1 lg:pt-[clamp(80px,11vw,153px)]">
           <h2 className="max-w-[440px] font-heading text-[36px] leading-[40px] font-medium tracking-[-0.02em] text-heading lg:text-[52px] lg:leading-[54px]">
             {team.title}
           </h2>
@@ -40,7 +40,7 @@ export default function TeamSection() {
           <Button label={team.cta} className="mt-[24px] lg:mt-[19px]" />
         </div>
 
-        <div className="relative mx-auto w-full max-w-[443px] lg:mx-0 lg:w-[443px]">
+        <div className="relative mx-auto w-full max-w-[443px] lg:mx-0 lg:w-[40%] lg:shrink-0 xl:w-[443px]">
           <div className="relative aspect-[443/536] overflow-hidden rounded-[16px] bg-black">
             <Image
               src={Images.team}
@@ -52,7 +52,7 @@ export default function TeamSection() {
           </div>
           <CircularBadge
             text={team.badge}
-            className="absolute -right-[81px] -bottom-[99px] size-[180px] motion-safe:animate-badge-spin max-lg:right-0 max-lg:-bottom-[90px] max-lg:size-[140px]"
+            className="absolute -right-[8px] -bottom-[99px] xl:-right-[81px] size-[180px] motion-safe:animate-badge-spin max-lg:right-0 max-lg:-bottom-[90px] max-lg:size-[140px]"
           />
         </div>
       </div>

@@ -25,8 +25,8 @@ export default function Footer() {
 
   return (
     <footer className="relative overflow-hidden bg-white">
-      <div className="mx-auto max-w-[1440px] px-[20px] pt-[64px] lg:pt-[100px] lg:pr-[74px] lg:pl-[62px]">
-        <div className="grid grid-cols-1 gap-[40px] sm:grid-cols-2 lg:grid-cols-[509px_236px_350px_1fr] lg:gap-0">
+      <div className="mx-auto max-w-[1440px] px-[20px] pt-[64px] lg:pt-[100px] lg:px-[48px] xl:pr-[74px] xl:pl-[62px]">
+        <div className="grid grid-cols-1 gap-[40px] sm:grid-cols-2 lg:grid-cols-[1.4fr_0.8fr_1fr_1.3fr] lg:gap-[32px] xl:grid-cols-[509px_236px_350px_1fr] xl:gap-0">
           <div>
             <Logo className="h-[62px] w-auto" />
             <p className="mt-[22px] text-[18px] leading-[26px] font-light tracking-[-0.02em] text-body">
@@ -76,7 +76,7 @@ export default function Footer() {
             </h3>
             <a
               href={`mailto:${footer.email}`}
-              className="mt-[26px] flex items-center gap-[9px] text-[18px] leading-[34px] font-light text-footer-link hover:text-primary"
+              className="mt-[26px] flex items-center gap-[9px] text-[18px] leading-[34px] font-light text-footer-link [overflow-wrap:anywhere] hover:text-primary"
             >
               <MailIcon className="size-[15px]" />
               {footer.email}

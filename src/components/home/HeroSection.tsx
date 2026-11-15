@@ -18,9 +18,10 @@ const CLIENTS = [
 ];
 
 // Scroll distance (px) over which the video expands, then how long it stays pinned when fully open.
-const EXPAND_DISTANCE = 900;
+const EXPAND_DISTANCE = 800;
 const MOBILE_EXPAND_DISTANCE = 600;
 const HOLD_DISTANCE = 220;
+const DESKTOP_MIN_HEIGHT = 560;
 const EDGE_GAP = 10;
 const START_RADIUS = 12;
 const END_RADIUS = 20;
@@ -93,9 +94,9 @@ function HeroVideo({ label }: { label?: string }) {
 function HeroStat({ className = "" }: { className?: string }) {
   const { hero } = Strings;
   return (
-    <div className={`relative z-20 flex-col items-center lg:mb-[-9px] lg:w-[160px] lg:items-start ${className}`}>
+    <div className={`relative z-20 flex-col items-center lg:mb-[-9px] lg:w-[160px] lg:shrink-0 lg:items-start ${className}`}>
       <TrendUpIcon className="h-[25px] w-[46px]" />
-      <p className="hero-ink mt-[33px] text-[64px] leading-[64px] font-normal tracking-[-0.03em] [--ink:#171717] lg:text-[72px] lg:leading-[72px]">
+      <p className="hero-ink mt-[clamp(16px,3.4vh,33px)] text-[64px] leading-[64px] font-normal tracking-[-0.03em] [--ink:#171717] lg:text-[clamp(52px,7vh,72px)] lg:leading-none">
         {hero.statValue}
       </p>
       <p className="hero-ink mt-[5px] text-[16px] leading-[22px] font-light [--ink:#585151]">
@@ -108,11 +109,11 @@ function HeroStat({ className = "" }: { className?: string }) {
 function HeroIntro({ className = "" }: { className?: string }) {
   const { hero } = Strings;
   return (
-    <div className={`relative z-20 flex-col items-center text-center lg:mb-[-3px] lg:w-[215px] lg:items-start lg:text-left ${className}`}>
+    <div className={`relative z-20 flex-col items-center text-center lg:mb-[-3px] lg:w-[215px] lg:shrink-0 lg:items-start lg:text-left ${className}`}>
       <p className="hero-ink max-w-[215px] text-[16px] leading-[24px] font-light tracking-[-0.01em] [--ink:#585151]">
         {hero.description}
       </p>
-      <Button label={hero.cta} size="lg" className="mt-[44px]" />
+      <Button label={hero.cta} size="lg" className="mt-[32px] lg:mt-[clamp(20px,4.5vh,44px)]" />
     </div>
   );
 }
@@ -120,13 +121,13 @@ function HeroIntro({ className = "" }: { className?: string }) {
 function TrustedBy({ className = "" }: { className?: string }) {
   const { hero } = Strings;
   return (
-    <div className={`relative z-20 px-[20px] ${className}`}>
+    <div className={`hero-trusted relative z-20 px-[20px] ${className}`}>
       <p className="hero-ink text-center text-[18px] leading-[24px] font-light tracking-[-0.01em] [--ink:#171717] lg:translate-x-[-14px]">
         {hero.trustedBy}
       </p>
       {/* Marquee: the track holds two identical halves and slides -50%, so the loop is seamless.
           Each half repeats the logo set so it always spans wider than the viewport. */}
-      <div className="marquee mx-auto mt-[32px] max-w-[1147px] overflow-hidden lg:translate-x-[-14px]">
+      <div className="marquee mx-auto mt-[24px] max-w-[1147px] lg:mt-[clamp(16px,3.3vh,32px)] overflow-hidden lg:translate-x-[-14px]">
         <ul className="marquee-track flex w-max items-center">
           {[0, 1].map((half) =>
             [...CLIENTS, ...CLIENTS].map((client, i) => (
@@ -201,8 +202,7 @@ export default function HeroSection() {
         w: slotRect.width,
         h: slotRect.height,
       };
-      // Cover the whole pinned hero, not just the viewport: on screens shorter than the 979px desktop
-      // hero the text below the fold has already turned white and would vanish on a white strip.
+      // Cover the whole pinned hero (it is one viewport tall, with a minimum height on very short screens).
       const end = {
         x: EDGE_GAP,
         y: EDGE_GAP,
@@ -236,9 +236,10 @@ export default function HeroSection() {
     };
   }, [animated, mode]);
 
+  // The pinned hero is one viewport tall (min 560px on desktop) so it fits any laptop screen.
   const sectionHeight =
     mode === "desktop"
-      ? `${979 + EXPAND_DISTANCE + HOLD_DISTANCE}px`
+      ? `calc(max(100vh, ${DESKTOP_MIN_HEIGHT}px) + ${EXPAND_DISTANCE + HOLD_DISTANCE}px)`
       : mode === "mobile"
         ? `calc(100svh + ${MOBILE_EXPAND_DISTANCE + HOLD_DISTANCE}px)`
         : undefined;
@@ -248,12 +249,12 @@ export default function HeroSection() {
       <section ref={outerRef} className="relative bg-white" style={sectionHeight ? { height: sectionHeight } : undefined}>
         <div
           ref={stickyRef}
-          className={`relative overflow-hidden bg-[radial-gradient(ellipse_760px_470px_at_50%_58%,#F9DFE3_0%,#FCEEF0_45%,#FFFFFF_100%)] pt-[130px] pb-[60px] lg:sticky lg:top-0 lg:block lg:h-[979px] lg:pt-[201px] lg:pb-0 ${
+          className={`relative overflow-hidden bg-[radial-gradient(ellipse_760px_470px_at_50%_58%,#F9DFE3_0%,#FCEEF0_45%,#FFFFFF_100%)] pt-[120px] pb-[48px] lg:sticky lg:top-0 lg:flex lg:h-screen lg:min-h-[560px] lg:flex-col lg:pt-[clamp(104px,19vh,201px)] lg:pb-[clamp(20px,4.5vh,56px)] ${
             mode === "mobile" ? "sticky top-0 flex h-svh flex-col justify-center" : ""
           }`}
         >
           {animated && (
-            <div ref={mediaRef} aria-hidden className="absolute z-10 overflow-hidden will-change-[left,top,width,height]">
+            <div ref={mediaRef} aria-hidden className="absolute z-10 overflow-hidden bg-[#f3e6e8] [contain:strict]">
               <HeroVideo />
               <div ref={overlayRef} className="absolute inset-0 bg-black opacity-0" />
             </div>
@@ -263,19 +264,19 @@ export default function HeroSection() {
             <p className="hero-ink text-[14px] leading-[22px] font-light [--ink:#828282] lg:text-[15px]">
               {hero.eyebrow}
             </p>
-            <h1 className="hero-ink mt-[6px] font-heading text-[34px] leading-[38px] font-medium tracking-[-0.02em] [--ink:#171717] sm:text-[48px] sm:leading-[50px] lg:mt-[4px] lg:text-[60px] lg:leading-[60px]">
+            <h1 className="hero-ink mt-[6px] font-heading text-[34px] leading-[38px] font-medium tracking-[-0.02em] [--ink:#171717] sm:text-[48px] sm:leading-[50px] lg:mt-[4px] lg:text-[clamp(40px,6.2vh,60px)] lg:leading-none">
               {hero.titleLine1}
               <br />
               <span className="text-primary">{hero.titleLine2}</span>
             </h1>
           </div>
 
-          <div className="mx-auto mt-[40px] flex max-w-[1440px] flex-col items-center px-[20px] lg:mt-[52px] lg:flex-row lg:items-end lg:justify-between lg:pr-[158px] lg:pl-[190px]">
+          <div className="hero-row mx-auto mt-[32px] flex w-full max-w-[1440px] flex-col items-center px-[20px] lg:mt-[clamp(20px,5.3vh,52px)] lg:min-h-0 lg:flex-1 lg:flex-row lg:items-end lg:justify-between lg:gap-[32px] lg:pr-[clamp(32px,8vw,158px)] lg:pl-[clamp(32px,10vw,190px)]">
             <HeroStat className="hidden lg:flex" />
 
             <div
               ref={slotRef}
-              className={`relative aspect-[486/273] w-full max-w-[660px] overflow-hidden rounded-[12px] ${
+              className={`hero-slot relative aspect-[486/273] shrink-0 overflow-hidden rounded-[12px] ${
                 animated ? "invisible" : ""
               }`}
             >
@@ -285,7 +286,7 @@ export default function HeroSection() {
             <HeroIntro className="hidden lg:flex" />
           </div>
 
-          <TrustedBy className="mt-[88px] hidden lg:block" />
+          <TrustedBy className="mt-[clamp(24px,8vh,88px)] hidden lg:block" />
         </div>
       </section>
 
