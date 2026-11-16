@@ -299,6 +299,8 @@ export default function ProcessSection() {
       fill.style.opacity = `${fillOpacity}`;
       // Once the flat fill covers it, drop the oversized gradient layer to free GPU memory.
       blob.style.visibility = fillOpacity >= 1 ? "hidden" : "visible";
+      // The fill covers the white page from here on, so its square corners never show.
+      stage.style.backgroundColor = fillOpacity >= 1 ? "transparent" : "#fff";
 
       // 3. Headline softens behind the incoming cards.
       const soft = seg(p, 0.22, 0.34);
@@ -332,9 +334,11 @@ export default function ProcessSection() {
       stage.style.width = `${w}px`;
       stage.style.height = `${h}px`;
       stage.style.transform = `translate(-50%, -50%) translate(${winX}px, ${winY}px) scale(${winScale})`;
-      // Stepped, so the rounded clip over the page repaints a handful of times rather than every frame.
+      // Rounded corners are painted on the backgrounds only, never used as a clip: a rounded
+      // clip over the composited cards forces a full-page mask that tears while it rebuilds.
+      // Stepped, so the fill re-rasterises a handful of times rather than every frame.
       const winRadius = Math.round(winA * 9) * 2;
-      stage.style.borderRadius = `0 0 ${winRadius}px ${winRadius}px`;
+      fill.style.borderRadius = `0 0 ${winRadius}px ${winRadius}px`;
       stageShadow.style.opacity = `${winA}`;
       wallpaper.style.transform = `scale(${lerp(1.12, 1, winA)})`;
 
@@ -422,29 +426,29 @@ export default function ProcessSection() {
           </div>
 
           {/* The screen: a desktop with the page open in a window. */}
-          <div ref={screenRef} className="absolute inset-x-0 overflow-hidden bg-[#1C56C8]">
-            <div ref={screenContentRef} className="absolute inset-x-0 top-0 will-change-transform">
+          <div ref={screenRef} className="absolute inset-x-0 overflow-hidden">
+            <div ref={screenContentRef} className="absolute inset-x-0 top-0 bg-[#1C56C8] will-change-transform">
               <div ref={wallpaperRef} aria-hidden className="absolute inset-0 will-change-transform">
                 <Wallpaper />
               </div>
               {/* Desktop icons and clock live on the desktop, so the full-screen page
                   covers them until it shrinks into a window. */}
               <div aria-hidden>
-                <div ref={iconsRef} className="absolute top-0 right-[2.5%] flex flex-col gap-[22px]">
+                <div ref={iconsRef} className="absolute top-0 right-[2.5%] flex flex-col gap-[22px] will-change-transform">
                   {story.desktopIcons.map((icon) => (
                     <DesktopIcon key={icon.label} label={icon.label} kind={icon.kind} />
                   ))}
                 </div>
                 <div
                   ref={clockRef}
-                  className="absolute top-0 right-[2.5%] text-[15px] text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]"
+                  className="absolute top-0 right-[2.5%] text-[15px] text-white will-change-transform [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]"
                 />
               </div>
               <div ref={stageRef} className="absolute top-1/2 left-1/2 bg-white will-change-transform">
                 <div
                   ref={stageShadowRef}
                   aria-hidden
-                  className="absolute inset-0 rounded-b-[18px] opacity-0 shadow-[0_24px_48px_rgba(0,0,0,0.3)]"
+                  className="absolute inset-0 rounded-b-[18px] opacity-0 shadow-[0_24px_48px_rgba(0,0,0,0.3)] will-change-[opacity]"
                 />
                 {/* Window title bar, parked above the viewport while the page is full screen. */}
                 <div
@@ -459,11 +463,11 @@ export default function ProcessSection() {
                   <span className="font-heading text-[26px] font-medium text-primary">{story.windowTitle}</span>
                 </div>
 
-                <div className="absolute inset-0 overflow-hidden rounded-[inherit]">
+                <div className="absolute inset-0 overflow-hidden">
                   <div
                     ref={fillRef}
                     aria-hidden
-                    className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,#C91F32_35%,#DE5465_80%,#F09AA5_100%)] opacity-0"
+                    className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,#C91F32_35%,#DE5465_80%,#F09AA5_100%)] opacity-0 will-change-[opacity]"
                   />
                   <div
                     ref={blobRef}
@@ -471,14 +475,14 @@ export default function ProcessSection() {
                     className="absolute top-1/2 left-1/2 h-screen w-screen bg-[radial-gradient(closest-side,#C91F32_0%,#D23447_40%,#EE8E9A_70%,rgba(255,255,255,0)_100%)] will-change-transform"
                   />
 
-                  <div ref={headRef} className="absolute inset-0 flex items-center justify-center px-[20px] opacity-0">
+                  <div ref={headRef} className="absolute inset-0 flex items-center justify-center px-[20px] opacity-0 will-change-[transform,opacity]">
                     <h2 className="text-center text-white">
-                      <span ref={headLinesRef} className="block font-heading text-[64px] leading-[66px] font-normal tracking-[-0.02em]">
+                      <span ref={headLinesRef} className="block will-change-[filter,opacity] font-heading text-[64px] leading-[66px] font-normal tracking-[-0.02em]">
                         {story.titleLine1}
                         <br />
                         {story.titleLine2}
                       </span>
-                      <span ref={italicRef} className="block font-serif text-[68px] leading-[80px] italic">
+                      <span ref={italicRef} className="block will-change-[filter,opacity] font-serif text-[68px] leading-[80px] italic">
                         {story.titleItalic}
                       </span>
                     </h2>
@@ -486,7 +490,7 @@ export default function ProcessSection() {
 
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div ref={rowRef} className="relative">
-                      <div ref={extrasRef} className="opacity-0">
+                      <div ref={extrasRef} className="opacity-0 will-change-[opacity]">
                         <p className="absolute bottom-full left-1/2 mb-[30px] -translate-x-1/2 rounded-[50%] border border-white/70 px-[26px] py-[8px] font-serif text-[20px] whitespace-nowrap text-white italic">
                           {story.label}
                         </p>
@@ -524,10 +528,10 @@ export default function ProcessSection() {
                 {/* Rounded screen corners, painted in the bezel colour and grown with the zoom.
                     The screen itself stays a plain rectangle, so its clip never needs a mask
                     repainted while it resizes. */}
-                <span className="absolute top-0 left-0 origin-top-left h-[8%] w-[6%] scale-(--mon) bg-[radial-gradient(ellipse_100%_100%_at_100%_100%,transparent_calc(100%-1px),#5680BD_100%)]" />
-                <span className="absolute top-0 right-0 origin-top-right h-[8%] w-[6%] scale-(--mon) bg-[radial-gradient(ellipse_100%_100%_at_0%_100%,transparent_calc(100%-1px),#5680BD_100%)]" />
-                <span className="absolute bottom-0 left-0 origin-bottom-left h-[8%] w-[6%] scale-(--mon) bg-[radial-gradient(ellipse_100%_100%_at_100%_0%,transparent_calc(100%-1px),#6A92CB_100%)]" />
-                <span className="absolute right-0 bottom-0 origin-bottom-right h-[8%] w-[6%] scale-(--mon) bg-[radial-gradient(ellipse_100%_100%_at_0%_0%,transparent_calc(100%-1px),#6A92CB_100%)]" />
+                <span className="absolute top-0 left-0 origin-top-left h-[8%] w-[6%] scale-(--mon) will-change-transform bg-[radial-gradient(ellipse_100%_100%_at_100%_100%,transparent_calc(100%-1px),#5680BD_100%)]" />
+                <span className="absolute top-0 right-0 origin-top-right h-[8%] w-[6%] scale-(--mon) will-change-transform bg-[radial-gradient(ellipse_100%_100%_at_0%_100%,transparent_calc(100%-1px),#5680BD_100%)]" />
+                <span className="absolute bottom-0 left-0 origin-bottom-left h-[8%] w-[6%] scale-(--mon) will-change-transform bg-[radial-gradient(ellipse_100%_100%_at_100%_0%,transparent_calc(100%-1px),#6A92CB_100%)]" />
+                <span className="absolute right-0 bottom-0 origin-bottom-right h-[8%] w-[6%] scale-(--mon) will-change-transform bg-[radial-gradient(ellipse_100%_100%_at_0%_0%,transparent_calc(100%-1px),#6A92CB_100%)]" />
               </div>
             </div>
 
