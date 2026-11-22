@@ -26,7 +26,6 @@ const BACK_PATTERN = [1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0];
 
 // How many viewport heights the scene stays pinned for.
 const PIN_SCREENS = 6;
-const CARD_HEIGHT = 443;
 const CARD_ROW_WIDTH = 1102;
 // Shifts the card row down so its label clears the fixed navbar.
 const ROW_OFFSET = 28;
@@ -46,6 +45,22 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const ease = (t: number) => t * t * (3 - 2 * t);
 // Eased 0 → 1 progress of `p` through the [from, to] window.
 const seg = (p: number, from: number, to: number) => ease(clamp((p - from) / (to - from)));
+// True while a 0 → 1 progress value is mid-way, i.e. while that piece is actually moving.
+const moving = (v: number) => v > 0 && v < 1;
+
+// GPU layers are only requested while a piece is moving. Keeping every full-screen layer alive
+// for the whole scene blew past Safari's graphics memory budget: it stopped painting tiles
+// (blank white page while scrolling) and on some Macs the tab crashed.
+function setLayer(el: HTMLElement, on: boolean, props = "transform") {
+  const value = on ? props : "auto";
+  if (el.style.willChange !== value) el.style.willChange = value;
+}
+
+// Hides a fully faded-out element so the browser drops its paint and layer entirely.
+function setShown(el: HTMLElement, shown: boolean) {
+  const value = shown ? "" : "hidden";
+  if (el.style.visibility !== value) el.style.visibility = value;
+}
 
 function ProcessCard({ index, className = "" }: { index: number; className?: string }) {
   const step = Strings.process[index];
@@ -281,13 +296,26 @@ export default function ProcessSection() {
       frame = 0;
       const w = sticky.clientWidth;
       const h = sticky.clientHeight;
-      const p = clamp(-outer.getBoundingClientRect().top / (outer.offsetHeight - h));
+      const outerRect = outer.getBoundingClientRect();
+      // Real height of the card row (cards grow with their copy), read before any style writes
+      // so it never forces an extra layout. offsetHeight ignores the scale applied below; it is 0
+      // on the frame the scene comes back from display: none, so fall back to the design height.
+      const cardsH = row.offsetHeight || 443;
+      const p = clamp(-outerRect.top / (outer.offsetHeight - h));
       sticky.style.setProperty("--mw", `${w}px`);
 
-      // 1. Headline rises in while the gradient dome climbs from the bottom.
-      const intro = seg(p, 0, 0.08);
-      head.style.opacity = `${intro}`;
-      head.style.transform = `translateY(${(1 - intro) * 40}px)`;
+      // Off screen (with some margin either side) the whole scene is taken out of rendering,
+      // so it holds no layers or tiles while the visitor is elsewhere on the page.
+      const near = outerRect.top < h * 1.25 && outerRect.bottom > -h * 0.25;
+      const display = near ? "" : "none";
+      if (monitor.style.display !== display) monitor.style.display = display;
+      if (!near) return;
+
+      // 1. The headline is already on screen in brand red as the section scrolls in (so the
+      //    visitor never lands on a blank white screen), then turns white as the gradient dome
+      //    climbs behind it. Stepped, so the text re-rasterises a handful of times, not every frame.
+      const ink = Math.round(seg(p, 0, 0.1) * 12) / 12;
+      head.style.color = `rgb(${lerp(201, 255, ink)}, ${lerp(31, 255, ink)}, ${lerp(50, 255, ink)})`;
 
       // 2. The gradient grows until it floods the page.
       const rise = seg(p, 0, 0.12);
@@ -297,8 +325,11 @@ export default function ProcessSection() {
       blob.style.transform = `translate(-50%, -50%) translateY(${blobY}px) scale(${blobScale})`;
       const fillOpacity = seg(p, 0.16, 0.28);
       fill.style.opacity = `${fillOpacity}`;
+      setShown(fill, fillOpacity > 0);
+      setLayer(fill, moving(fillOpacity), "opacity");
       // Once the flat fill covers it, drop the oversized gradient layer to free GPU memory.
-      blob.style.visibility = fillOpacity >= 1 ? "hidden" : "visible";
+      setShown(blob, fillOpacity < 1);
+      setLayer(blob, fillOpacity < 1 && (moving(rise) || moving(flood)));
       // The fill covers the white page from here on, so its square corners never show.
       stage.style.backgroundColor = fillOpacity >= 1 ? "transparent" : "#fff";
 
@@ -312,7 +343,7 @@ export default function ProcessSection() {
       italic.style.opacity = `${1 - softItalic * 0.45}`;
 
       // 4. Cards fly up from below and flip from their red back to the white front.
-      const fit = Math.min(1, (h - 330) / CARD_HEIGHT, (w - 80) / CARD_ROW_WIDTH);
+      const fit = Math.min(1, (h - 330) / cardsH, (w - 80) / CARD_ROW_WIDTH);
       row.style.transform = `translateY(${ROW_OFFSET}px) scale(${fit})`;
       cardRefs.current.forEach((card, i) => {
         if (!card) return;
@@ -322,8 +353,17 @@ export default function ProcessSection() {
         card.style.transform =
           `translate3d(0, ${y}px, 0) rotateX(${(1 - c) * -28}deg) ` +
           `rotateY(${(1 - c) * 180}deg) rotateZ(${lerp(i === 1 ? -8 : 8, rest.rotate, c)}deg)`;
+        setShown(card, c > 0);
+        // Show exactly one face, switching at the edge-on point of the flip. Safari doesn't
+        // reliably honour backface-visibility here and painted the mirrored back over the front.
+        const [front, back] = card.children as unknown as [HTMLElement, HTMLElement];
+        const frontFacing = (1 - c) * 180 < 90;
+        setShown(front, frontFacing);
+        setShown(back, !frontFacing);
       });
-      extras.style.opacity = `${seg(p, 0.52, 0.6)}`;
+      const extrasOpacity = seg(p, 0.52, 0.6);
+      extras.style.opacity = `${extrasOpacity}`;
+      setShown(extras, extrasOpacity > 0);
 
       // 5. The page shrinks into a window on a desktop.
       const winA = seg(p, 0.62, 0.72);
@@ -340,7 +380,10 @@ export default function ProcessSection() {
       const winRadius = Math.round(winA * 9) * 2;
       fill.style.borderRadius = `0 0 ${winRadius}px ${winRadius}px`;
       stageShadow.style.opacity = `${winA}`;
+      setShown(stageShadow, winA > 0);
       wallpaper.style.transform = `scale(${lerp(1.12, 1, winA)})`;
+      setLayer(stage, moving(winA) || moving(winB));
+      setLayer(wallpaper, moving(winA));
 
       // 6. The desktop shrinks into a retro CRT: the screen settles to 4:3-ish and the
       //    whole monitor zooms out, then tilts as the page moves on.
@@ -379,6 +422,11 @@ export default function ProcessSection() {
       monitor.style.transform =
         `translate(-50%, -50%) translateY(${monY}px) scale(${monScale}) rotate(${tilt * -4}deg)`;
       glass.style.opacity = `${mon}`;
+      setShown(glass, mon > 0);
+      setShown(corners, mon > 0);
+      const zooming = moving(mon) || moving(tilt);
+      setLayer(monitor, zooming);
+      setLayer(screenContent, moving(mon));
     };
 
     const schedule = () => {
@@ -420,35 +468,35 @@ export default function ProcessSection() {
   return (
     <section ref={outerRef} className="relative bg-white" style={{ height: `${(PIN_SCREENS + 1) * 100}vh` }}>
       <div ref={stickyRef} className="sticky top-0 h-screen overflow-hidden bg-white">
-        <div ref={monitorRef} className="absolute top-1/2 left-1/2 w-full will-change-transform">
+        <div ref={monitorRef} className="absolute top-1/2 left-1/2 w-full">
           <div ref={crtRef} className="absolute inset-x-0">
             <CrtBody />
           </div>
 
           {/* The screen: a desktop with the page open in a window. */}
           <div ref={screenRef} className="absolute inset-x-0 overflow-hidden">
-            <div ref={screenContentRef} className="absolute inset-x-0 top-0 bg-[#1C56C8] will-change-transform">
-              <div ref={wallpaperRef} aria-hidden className="absolute inset-0 will-change-transform">
+            <div ref={screenContentRef} className="absolute inset-x-0 top-0 bg-[#1C56C8]">
+              <div ref={wallpaperRef} aria-hidden className="absolute inset-0">
                 <Wallpaper />
               </div>
               {/* Desktop icons and clock live on the desktop, so the full-screen page
                   covers them until it shrinks into a window. */}
               <div aria-hidden>
-                <div ref={iconsRef} className="absolute top-0 right-[2.5%] flex flex-col gap-[22px] will-change-transform">
+                <div ref={iconsRef} className="absolute top-0 right-[2.5%] flex flex-col gap-[22px]">
                   {story.desktopIcons.map((icon) => (
                     <DesktopIcon key={icon.label} label={icon.label} kind={icon.kind} />
                   ))}
                 </div>
                 <div
                   ref={clockRef}
-                  className="absolute top-0 right-[2.5%] text-[15px] text-white will-change-transform [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]"
+                  className="absolute top-0 right-[2.5%] text-[15px] text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]"
                 />
               </div>
-              <div ref={stageRef} className="absolute top-1/2 left-1/2 bg-white will-change-transform">
+              <div ref={stageRef} className="absolute top-1/2 left-1/2 bg-white">
                 <div
                   ref={stageShadowRef}
                   aria-hidden
-                  className="absolute inset-0 rounded-b-[18px] opacity-0 shadow-[0_24px_48px_rgba(0,0,0,0.3)] will-change-[opacity]"
+                  className="absolute inset-0 rounded-b-[18px] opacity-0 shadow-[0_24px_48px_rgba(0,0,0,0.3)]"
                 />
                 {/* Window title bar, parked above the viewport while the page is full screen. */}
                 <div
@@ -467,22 +515,22 @@ export default function ProcessSection() {
                   <div
                     ref={fillRef}
                     aria-hidden
-                    className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,#C91F32_35%,#DE5465_80%,#F09AA5_100%)] opacity-0 will-change-[opacity]"
+                    className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,#C91F32_35%,#DE5465_80%,#F09AA5_100%)] opacity-0"
                   />
                   <div
                     ref={blobRef}
                     aria-hidden
-                    className="absolute top-1/2 left-1/2 h-screen w-screen bg-[radial-gradient(closest-side,#C91F32_0%,#D23447_40%,#EE8E9A_70%,rgba(255,255,255,0)_100%)] will-change-transform"
+                    className="absolute top-1/2 left-1/2 h-screen w-screen bg-[radial-gradient(closest-side,#C91F32_0%,#D23447_40%,#EE8E9A_70%,rgba(255,255,255,0)_100%)]"
                   />
 
-                  <div ref={headRef} className="absolute inset-0 flex items-center justify-center px-[20px] opacity-0 will-change-[transform,opacity]">
-                    <h2 className="text-center text-white">
-                      <span ref={headLinesRef} className="block will-change-[filter,opacity] font-heading text-[64px] leading-[66px] font-normal tracking-[-0.02em]">
+                  <div ref={headRef} className="absolute inset-0 flex items-center justify-center px-[20px] text-primary">
+                    <h2 className="text-center">
+                      <span ref={headLinesRef} className="block font-heading text-[64px] leading-[66px] font-normal tracking-[-0.02em]">
                         {story.titleLine1}
                         <br />
                         {story.titleLine2}
                       </span>
-                      <span ref={italicRef} className="block will-change-[filter,opacity] font-serif text-[68px] leading-[80px] italic">
+                      <span ref={italicRef} className="block font-serif text-[68px] leading-[80px] italic">
                         {story.titleItalic}
                       </span>
                     </h2>
@@ -490,7 +538,7 @@ export default function ProcessSection() {
 
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div ref={rowRef} className="relative">
-                      <div ref={extrasRef} className="opacity-0 will-change-[opacity]">
+                      <div ref={extrasRef} className="opacity-0">
                         <p className="absolute bottom-full left-1/2 mb-[30px] -translate-x-1/2 rounded-[50%] border border-white/70 px-[26px] py-[8px] font-serif text-[20px] whitespace-nowrap text-white italic">
                           {story.label}
                         </p>
@@ -522,16 +570,16 @@ export default function ProcessSection() {
               <div
                 ref={glassRef}
                 aria-hidden
-                className="pointer-events-none absolute inset-x-0 rounded-[6%/8%] will-change-[transform,opacity] bg-[radial-gradient(ellipse_at_28%_12%,rgba(255,255,255,0.22),transparent_45%),radial-gradient(ellipse_at_center,transparent_58%,rgba(0,0,0,0.5)_100%),repeating-linear-gradient(0deg,rgba(0,0,0,0.07)_0_2px,transparent_2px_5px)] opacity-0 shadow-[inset_0_0_0_10px_rgba(0,0,0,0.85)]"
+                className="pointer-events-none absolute inset-x-0 rounded-[6%/8%] bg-[radial-gradient(ellipse_at_28%_12%,rgba(255,255,255,0.22),transparent_45%),radial-gradient(ellipse_at_center,transparent_58%,rgba(0,0,0,0.5)_100%),repeating-linear-gradient(0deg,rgba(0,0,0,0.07)_0_2px,transparent_2px_5px)] opacity-0 shadow-[inset_0_0_0_10px_rgba(0,0,0,0.85)]"
               />
-              <div ref={cornersRef} aria-hidden className="pointer-events-none absolute inset-x-0 will-change-transform">
+              <div ref={cornersRef} aria-hidden className="pointer-events-none absolute inset-x-0">
                 {/* Rounded screen corners, painted in the bezel colour and grown with the zoom.
                     The screen itself stays a plain rectangle, so its clip never needs a mask
                     repainted while it resizes. */}
-                <span className="absolute top-0 left-0 origin-top-left h-[8%] w-[6%] scale-(--mon) will-change-transform bg-[radial-gradient(ellipse_100%_100%_at_100%_100%,transparent_calc(100%-1px),#5680BD_100%)]" />
-                <span className="absolute top-0 right-0 origin-top-right h-[8%] w-[6%] scale-(--mon) will-change-transform bg-[radial-gradient(ellipse_100%_100%_at_0%_100%,transparent_calc(100%-1px),#5680BD_100%)]" />
-                <span className="absolute bottom-0 left-0 origin-bottom-left h-[8%] w-[6%] scale-(--mon) will-change-transform bg-[radial-gradient(ellipse_100%_100%_at_100%_0%,transparent_calc(100%-1px),#6A92CB_100%)]" />
-                <span className="absolute right-0 bottom-0 origin-bottom-right h-[8%] w-[6%] scale-(--mon) will-change-transform bg-[radial-gradient(ellipse_100%_100%_at_0%_0%,transparent_calc(100%-1px),#6A92CB_100%)]" />
+                <span className="absolute top-0 left-0 origin-top-left h-[8%] w-[6%] scale-(--mon) bg-[radial-gradient(ellipse_100%_100%_at_100%_100%,transparent_calc(100%-1px),#5680BD_100%)]" />
+                <span className="absolute top-0 right-0 origin-top-right h-[8%] w-[6%] scale-(--mon) bg-[radial-gradient(ellipse_100%_100%_at_0%_100%,transparent_calc(100%-1px),#5680BD_100%)]" />
+                <span className="absolute bottom-0 left-0 origin-bottom-left h-[8%] w-[6%] scale-(--mon) bg-[radial-gradient(ellipse_100%_100%_at_100%_0%,transparent_calc(100%-1px),#6A92CB_100%)]" />
+                <span className="absolute right-0 bottom-0 origin-bottom-right h-[8%] w-[6%] scale-(--mon) bg-[radial-gradient(ellipse_100%_100%_at_0%_0%,transparent_calc(100%-1px),#6A92CB_100%)]" />
               </div>
             </div>
 

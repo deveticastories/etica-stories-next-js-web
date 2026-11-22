@@ -32,6 +32,7 @@ export default function WhyChooseSection() {
         <h2 className="font-heading text-[36px] leading-[40px] font-medium tracking-[-0.02em] text-white lg:text-[52px] lg:leading-[55px]">
           {whyChoose.titleStart}
           <span className="text-primary">{whyChoose.titleBrand}</span>
+          {whyChoose.titleMid}
           <br />
           {whyChoose.titleEnd}
         </h2>

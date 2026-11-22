@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Images from "@/utils/Images";
 import Strings from "@/utils/Strings";
+import ClientLogos from "@/components/home/ClientLogos";
 
 export default function MissionSection() {
   const { mission } = Strings;
@@ -47,6 +48,8 @@ export default function MissionSection() {
           </span>
         </div>
       </div>
+
+      <ClientLogos className="mx-auto mt-[80px] max-w-[1440px] px-[20px] lg:mt-[clamp(100px,9vw,140px)] lg:px-[48px]" />
     </section>
   );
 }

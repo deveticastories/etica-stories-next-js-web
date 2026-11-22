@@ -1,21 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import Button from "@/components/Button";
 import { TrendUpIcon } from "@/components/Icons";
 import Images from "@/utils/Images";
 import Strings from "@/utils/Strings";
 import Videos from "@/utils/Videos";
 import { onIntroDone } from "@/utils/introState";
-
-const CLIENTS = [
-  { name: "FAB", src: Images.clients.fab, width: 83, height: 29 },
-  { name: "Saaz International", src: Images.clients.saaz, width: 83, height: 32 },
-  { name: "Emphz", src: Images.clients.emphz, width: 125, height: 35 },
-  { name: "Swaah Juniors", src: Images.clients.swaahJuniors, width: 106, height: 41 },
-  { name: "Introlines Merchant Exports", src: Images.clients.introlines, width: 163, height: 52 },
-];
 
 // Scroll distance (px) over which the video expands, then how long it stays pinned when fully open.
 const EXPAND_DISTANCE = 800;
@@ -64,12 +55,27 @@ function HeroVideo({ label }: { label?: string }) {
     if (perFrame) frameHandle = video.requestVideoFrameCallback(onFrame);
     else video.addEventListener("timeupdate", restartIfPastEnd);
 
+    // Decoding a 1080p video off screen costs GPU memory the pinned scenes further down need.
+    let introDone = false;
+    let onScreen = true;
+    const sync = () => {
+      if (introDone && onScreen) video.play().catch(() => {});
+      else video.pause();
+    };
+    const observer = new IntersectionObserver(([entry]) => {
+      onScreen = entry.isIntersecting;
+      sync();
+    });
+    observer.observe(video);
+
     const unsubscribe = onIntroDone(() => {
-      video.play().catch(() => {});
+      introDone = true;
+      sync();
     });
 
     return () => {
       unsubscribe();
+      observer.disconnect();
       if (perFrame) video.cancelVideoFrameCallback(frameHandle);
       else video.removeEventListener("timeupdate", restartIfPastEnd);
     };
@@ -114,41 +120,6 @@ function HeroIntro({ className = "" }: { className?: string }) {
         {hero.description}
       </p>
       <Button label={hero.cta} size="lg" className="mt-[32px] lg:mt-[clamp(20px,4.5vh,44px)]" />
-    </div>
-  );
-}
-
-function TrustedBy({ className = "" }: { className?: string }) {
-  const { hero } = Strings;
-  return (
-    <div className={`hero-trusted relative z-20 px-[20px] ${className}`}>
-      <p className="hero-ink text-center text-[18px] leading-[24px] font-light tracking-[-0.01em] [--ink:#171717] lg:translate-x-[-14px]">
-        {hero.trustedBy}
-      </p>
-      {/* Marquee: the track holds two identical halves and slides -50%, so the loop is seamless.
-          Each half repeats the logo set so it always spans wider than the viewport. */}
-      <div className="marquee mx-auto mt-[24px] max-w-[1147px] lg:mt-[clamp(16px,3.3vh,32px)] overflow-hidden lg:translate-x-[-14px]">
-        <ul className="marquee-track flex w-max items-center">
-          {[0, 1].map((half) =>
-            [...CLIENTS, ...CLIENTS].map((client, i) => (
-              <li
-                key={`${half}-${i}`}
-                aria-hidden={half === 1 || i >= CLIENTS.length || undefined}
-                className="shrink-0 px-[24px] lg:px-[48px]"
-              >
-                <Image
-                  src={client.src}
-                  alt={client.name}
-                  width={client.width}
-                  height={client.height}
-                  className="hero-logo max-w-none"
-                  style={{ width: client.width, height: client.height }}
-                />
-              </li>
-            ))
-          )}
-        </ul>
-      </div>
     </div>
   );
 }
@@ -261,14 +232,13 @@ export default function HeroSection() {
           )}
 
           <div className="relative z-20 px-[20px] text-center">
-            <p className="hero-ink text-[14px] leading-[22px] font-light [--ink:#828282] lg:text-[15px]">
+            {/* The eyebrow is the page's H1 (the SEO main heading); the large title below is visual. */}
+            <h1 className="hero-ink text-[14px] leading-[22px] font-light [--ink:#828282] lg:text-[15px]">
               {hero.eyebrow}
-            </p>
-            <h1 className="hero-ink mt-[6px] font-heading text-[34px] leading-[38px] font-medium tracking-[-0.02em] [--ink:#171717] sm:text-[48px] sm:leading-[50px] lg:mt-[4px] lg:text-[clamp(40px,6.2vh,60px)] lg:leading-none">
-              {hero.titleLine1}
-              <br />
-              <span className="text-primary">{hero.titleLine2}</span>
             </h1>
+            <h2 className="hero-ink mx-auto mt-[8px] max-w-[980px] font-heading text-[24px] leading-[30px] font-medium tracking-[-0.02em] text-balance [--ink:#171717] sm:text-[32px] sm:leading-[38px] lg:mt-[10px] lg:text-[clamp(28px,4.4vh,44px)] lg:leading-[1.15]">
+              {hero.titleLine1} <span className="text-primary">{hero.titleLine2}</span>
+            </h2>
           </div>
 
           <div className="hero-row mx-auto mt-[32px] flex w-full max-w-[1440px] flex-col items-center px-[20px] lg:mt-[clamp(20px,5.3vh,52px)] lg:min-h-0 lg:flex-1 lg:flex-row lg:items-end lg:justify-between lg:gap-[32px] lg:pr-[clamp(32px,8vw,158px)] lg:pl-[clamp(32px,10vw,190px)]">
@@ -285,8 +255,6 @@ export default function HeroSection() {
 
             <HeroIntro className="hidden lg:flex" />
           </div>
-
-          <TrustedBy className="mt-[clamp(24px,8vh,88px)] hidden lg:block" />
         </div>
       </section>
 
@@ -294,7 +262,6 @@ export default function HeroSection() {
       <section className="flex flex-col items-center gap-[36px] bg-white pt-[56px] pb-[60px] lg:hidden">
         <HeroStat className="flex" />
         <HeroIntro className="flex px-[20px]" />
-        <TrustedBy className="mt-[28px] w-full" />
       </section>
     </>
   );

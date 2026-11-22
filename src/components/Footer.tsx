@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
 import {
-  ChevronDownIcon,
   FacebookIcon,
   InstagramIcon,
   LinkedInIcon,
@@ -100,37 +99,32 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-[56px] flex flex-col-reverse items-start justify-between gap-[24px] sm:flex-row sm:items-end lg:mt-[74px]">
-          <p className="text-[16px] text-copyright sm:pb-[25px]">{footer.copyright}</p>
-          <div>
-            <label
-              htmlFor="language"
-              className="block pl-[2px] text-[16px] leading-[20px] text-heading sm:-translate-y-[2px]"
-            >
-              {footer.languageLabel}
-            </label>
-            <div className="relative mt-[10px]">
-              <select
-                id="language"
-                className="h-[43px] w-[146px] appearance-none rounded-none border border-select-border bg-white pr-[40px] pl-[16px] text-[18px] font-light text-[#8A8A8A] outline-none"
-              >
-                {footer.languages.map((language) => (
-                  <option key={language}>{language}</option>
-                ))}
-              </select>
-              <ChevronDownIcon className="pointer-events-none absolute top-1/2 right-[13px] w-[14px] -translate-y-1/2 text-heading" />
-            </div>
-          </div>
-        </div>
+        <p className="mt-[56px] text-[16px] text-copyright lg:mt-[74px]">{footer.copyright}</p>
       </div>
 
-      <div
-        aria-hidden
-        className="pointer-events-none relative mt-[40px] h-[130px] overflow-hidden select-none lg:mt-[87px] lg:h-[261px]"
-      >
-        <span className="absolute top-0 left-[-60px] bg-[linear-gradient(180deg,#FFDDE1_18%,#FFF7F8_88%)] bg-clip-text font-heading text-[170px] leading-none font-medium tracking-[-0.035em] whitespace-nowrap text-transparent lg:left-[-120px] lg:text-[340px]">
-          {footer.watermark}
-        </span>
+      {/* Drawn as SVG so the full word always spans the footer width exactly, at any screen size:
+          textLength fits it to the viewBox, which scales with the container. The viewBox is cropped
+          to the cap height (the word is all capitals), so there is no empty band above or below. */}
+      <div aria-hidden className="pointer-events-none mt-[40px] px-[16px] pb-[24px] select-none lg:mt-[87px] lg:px-[32px] lg:pb-[40px]">
+        <svg viewBox="0 0 1000 105" className="block h-auto w-full overflow-visible">
+          <defs>
+            <linearGradient id="footer-watermark-fill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#FFDDE1" />
+              <stop offset="100%" stopColor="#FFEEF0" />
+            </linearGradient>
+          </defs>
+          <text
+            x="0"
+            y="105"
+            textLength="1000"
+            lengthAdjust="spacingAndGlyphs"
+            fill="url(#footer-watermark-fill)"
+            className="font-heading font-medium"
+            fontSize="146"
+          >
+            {footer.watermark}
+          </text>
+        </svg>
       </div>
     </footer>
   );

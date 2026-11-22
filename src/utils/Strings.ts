@@ -16,49 +16,68 @@ const Strings = {
   },
 
   hero: {
-    eyebrow: "Creative Stratergy · Digital Experiences",
-    titleLine1: "Where Brands Find Their",
-    titleLine2: "Voice & Vision",
+    eyebrow: "Your Digital Marketing Agency for Bold Brand Growth",
+    titleLine1:
+      "We empower businesses across Kerala and the UAE through strategic marketing, innovative design,",
+    titleLine2: "impactful branding and engaging content.",
     statValue: "360°",
     statLabel: "Creative Thinking",
     description:
       "Strategy-Led Creativity. Thoughtful Design. Digital Experiences Built To Connect.",
     cta: "Start a Project",
-    trustedBy: "Trusted By Brands. Driven By Ideas",
   },
 
   about: {
-    highlight:
-      "No Matter Which Industry You Belong To, Only Your Success Matters. We Are A Full-Service Branding And Digital Marketing Agency In Kerala",
-    rest: "And UAE  Helping Startups, SMEs, And Growth-Focused Businesses Build Powerful Brands, Launch Smarter Marketing Strategies, And Develop Technology That Drives Real Results. From Creative Brand Storytelling To Custom Software Development, Our Team Of Experts Brings 10+ Years Of Experience To Every Project. Whether You Are In Kochi, Calicut, Dubai, Or Abu Dhabi — We Are Built To Grow With You.",
+    title: "No Matter Which Industry You Belong To, Your Success Is Our Priority",
+    body: "We are a Digital Marketing Agency in Kerala and the UAE that provides the support you need to build your brand, create effective marketing strategies, and develop technology-driven solutions that deliver results. Our expert team brings more than 10 years of experience in brand storytelling, custom software development, and beyond. You are at any of these places in Kochi, Calicut, Dubai, or Abu Dhabi, and we are here to help your business grow.",
+    // Scroll scene after the statement: one big word at a time, each with its own 3D object.
+    pillars: [
+      {
+        word: "Brand",
+        body: "Strategy-led identities that make your business instantly recognisable and impossible to ignore.",
+        href: "/services",
+      },
+      {
+        word: "Build",
+        body: "Websites, apps and custom software engineered to perform, scale and grow with your business.",
+        href: "/services",
+      },
+      {
+        word: "Market",
+        body: "Data-driven campaigns that put your brand in front of the right audience and turn attention into growth.",
+        href: "/services",
+      },
+    ],
+    learnMore: "Learn more",
   },
 
   mission: {
     watermark: "OUR MISSION",
+    trustedBy: "Trusted By Brands. Driven By Ideas",
     blocks: [
       {
-        title: "Turning Ideas Into Measurable Growth",
-        body: "We Combine Creativity, Content, And Technology To Help Businesses Build Stronger Brands, Connect With Their Audiences, And Achieve Meaningful, Measurable Growth.",
+        title: "Transforming Ideas Into Business Success",
+        body: "We combine strategic thinking with creative excellence and content marketing services with technology to amplify brands cultivate meaningful relationships with audiences and drive measurable business outcomes.",
       },
       {
-        title: "Empowering Businesses to Grow Without Limits",
-        body: "We Envision A Digital Landscape Where Every Business Has Access To Smarter, More Effective, And Cost-Efficient Solutions That Unlock New Opportunities And Long-Term Success.",
+        title: "Advancing Businesses Through Strategic Solutions",
+        body: "We are committed to developing an environment where any organization can access innovative, cost-effective solutions from a branding agency to maximize its potential, take advantage of opportunities and continue to grow for years to come.",
       },
     ],
   },
 
   process: [
     {
-      title: "Analysis & Planning",
-      body: "Every Successful Project Starts With Understanding. We Take The Time To Analyse Your Business Needs, Study Your Market, And Map Out The Right Technology And Marketing Solutions Before A Single Line Of Code Is Written. This Stage Ensures Your Investment Is Always Moving In The Right Direction.",
+      title: "Evaluation & Strategy",
+      body: "All business focused solutions start with a good sense of the business. We analyze your goals asses market opportunities and determine the right mix of technology and marketing strategies to support them. This structured approach enables informed decisions efficient resource allocation and sustainable business growth through a brand awareness strategy.",
     },
     {
-      title: "Develop & Deploy",
-      body: "With A Clear Plan In Place, Our Integrated Team Of Developers, Designers, And Strategists Gets To Work. We Build And Deploy Your Custom Solutions Using The Latest Technologies And Industry Best Practices — Delivering Clean, Tested, Production-Ready Products On Schedule.",
+      title: "Develop & Launch",
+      body: "Under a clear strategy, our team of developers, designers and strategists will collaborate to realize your vision as an advertising agency. Develop and execute customized solutions based on innovative technologies and best practices reliable products with deep testing and on schedule for product launches.",
     },
     {
-      title: "Support & Optimize",
-      body: "Launching Is Just The Beginning. We Provide Ongoing Support, Monitor Performance Metrics, And Continuously Optimise Your Solutions To Keep Them Sharp, Fast, And Effective. Your Growth Does Not Stop At Go-Live — And Neither Do We.",
+      title: "Monitor & Enhance",
+      body: "Launching is just the starting point! We're here to back you up monitor your progress, and periodically tweak your solutions so they continue to be efficient, secure and effective. We're constantly working to enhance and optimise your solutions as a performance marketing agency to help you grow just as your business grows.",
     },
   ],
 
@@ -82,32 +101,33 @@ const Strings = {
   },
 
   whyChoose: {
-    titleStart: "Why choose ",
+    titleStart: "Why Is ",
     titleBrand: "Etica",
-    titleEnd: "over everyone else?",
+    titleMid: " the Ideal Partner",
+    titleEnd: "for Your Business?",
     subtitle:
-      "We Unite Strategy, Creativity, And Technology To Grow Your Business Without Stretching Your Budget.",
+      "We Blend Strategic Expertise, Creative Solutions, And Technology To Build Your Business Without Overspending.",
     otherCompaniesLabel: "Other Companies",
     watermark: "Why Choose",
     others: [
-      "Generic template solutions that look like everyone else",
-      "Limited technical expertise beyond basic services",
-      "Separate teams for branding, tech, and marketing",
-      "High overhead costs passed on to you",
-      "One-size-fits-all approach with no real strategy",
+      "Common solutions that are like everyone else.",
+      "Limited technical knowledge besides basic services",
+      "Decentralized branding, tech and marketing teams.",
+      "Excessive overhead costs charged to you",
+      "No real strategy, one size fits all!",
     ],
     etica: [
-      "Custom solutions built around your specific business goals",
-      "10+ years of deep software and technology expertise",
-      "Branding, tech, and marketing fully integrated under one roof",
-      "Cost-efficient delivery with premium-quality output",
-      "Strategies crafted specifically for your industry and audience",
+      "Tailored solutions based on your unique requirements",
+      "10+ years of rich software and technology experience",
+      "Marketing, tech and branding are all under one roof.",
+      "Delivering premium quality at a low cost",
+      "Tailored IT services designed specifically for your industry and audience",
     ],
   },
 
   team: {
-    title: "The Team Behind Your Growth",
-    body: "Meet The Creative Thinkers And Technology Experts Turning Bold Ideas Into Meaningful Impact.",
+    title: "The Experts Behind Your Success",
+    body: "Connect with the creative thinkers and the technology experts making bold ideas and real impact.",
     cta: "Let's Talk",
     badge: "JOIN OUR TEAM · JOIN OUR TEAM · ",
   },
@@ -175,8 +195,8 @@ const Strings = {
   },
 
   cta: {
-    title: "Let’s Build Something That Moves You Forward",
-    body: "We Bring Branding, Creativity, And Technology Together To Help Your Business Grow.",
+    title: "Let's turn bold ideas into business possibilities",
+    body: "Our business vision for meaningful results is through combining branding, creative thinking and technology",
     button: "Let's Talk",
   },
 
@@ -507,8 +527,6 @@ const Strings = {
     contactTitle: "Get In Touch",
     email: "info@eticastories.com",
     phone: "+91 97456 30104",
-    languageLabel: "LANGUAGE",
-    languages: ["English"],
     copyright: "© 2025 Etica Stories",
     watermark: "ETICA STORIES",
   },

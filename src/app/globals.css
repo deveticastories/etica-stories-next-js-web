@@ -62,6 +62,19 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Logo intro safety net: if the page's JS is slow or fails, the server-rendered white overlay
+   still fades away instead of leaving a blank screen. JS normally removes it well before. */
+.intro-failsafe {
+  animation: intro-failsafe 600ms ease-out 7s forwards;
+}
+
+@keyframes intro-failsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
 /* Lenis animates the scroll itself; native smooth scrolling on top of it makes it fight and lag. */
 html.lenis {
   scroll-behavior: auto;
@@ -71,10 +84,15 @@ body {
   background: #ffffff;
   color: #171717;
   font-family: var(--font-dm-sans), Arial, Helvetica, sans-serif;
-  overflow-x: hidden;
+  /* `clip`, not `hidden`: hidden makes <body> a scroll container whenever its overflow isn't
+     propagated to the viewport (e.g. while the intro sets overflow: hidden on <html>). Safari's
+     threaded scrolling then anchors the pinned hero and process scenes to that never-scrolling
+     box, so they slide away mid-animation and leave blank white screens. clip trims the
+     watermarks' horizontal bleed the same way without creating a scroll container. */
+  overflow-x: clip;
 }
 
-/* Hero scroll-expand: text turns white and logos go white as --hero-p goes 0 → 1 */
+/* Hero scroll-expand: text turns white as --hero-p goes 0 → 1 */
 .hero-ink {
   color: var(--ink);
 }
@@ -88,22 +106,23 @@ body {
   }
 }
 
-.hero-logo {
-  filter: brightness(calc(1 - var(--hero-p, 0))) invert(var(--hero-p, 0));
-}
-
 /* Hero video slot. Mobile: full width, capped so title + video fit a landscape phone.
    Desktop: the row is a size container, so the video takes whatever height is left between the
-   title and the logos — it shrinks on short laptop screens instead of pushing content off-screen. */
+   title and the bottom of the hero — it shrinks on short laptop screens instead of pushing content off-screen. */
 .hero-slot {
   width: 100%;
   max-width: 660px;
-  max-width: min(660px, max(240px, (100svh - 240px) * 486 / 273));
+  max-width: min(660px, max(240px, (100svh - 320px) * 486 / 273));
 }
 
 @media (min-width: 1024px) {
+  /* The row fills the rest of the hero, so centre its single line vertically (align-content
+     needs wrap to apply) while items-end keeps the stat and CTA on the video's bottom edge.
+     The slot width below leaves room for both side columns, so the line never actually wraps. */
   .hero-row {
     container-type: size;
+    flex-wrap: wrap;
+    align-content: center;
   }
 
   .hero-slot {
@@ -112,15 +131,7 @@ body {
   }
 }
 
-/* Very short desktop windows (e.g. 1366×768 at 125% scaling): drop the logo strip from the pinned
-   hero so the title and video keep their room. */
-@media (min-width: 1024px) and (max-height: 620px) {
-  .hero-trusted {
-    display: none !important;
-  }
-}
-
-/* Hero "Trusted by" logo marquee */
+/* "Trusted by" client logo marquee */
 .marquee {
   mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
 }

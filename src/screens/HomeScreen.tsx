@@ -7,7 +7,6 @@ import MissionSection from "@/components/home/MissionSection";
 import ProcessSection from "@/components/home/ProcessSection";
 import WhyChooseSection from "@/components/home/WhyChooseSection";
 import TeamSection from "@/components/home/TeamSection";
-import FaqSection from "@/components/home/FaqSection";
 import CtaSection from "@/components/home/CtaSection";
 
 export default function HomeScreen() {
@@ -22,7 +21,6 @@ export default function HomeScreen() {
         <ProcessSection />
         <WhyChooseSection />
         <TeamSection />
-        <FaqSection />
         <CtaSection />
       </main>
       <Footer />

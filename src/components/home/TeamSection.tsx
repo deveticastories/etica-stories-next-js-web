@@ -28,7 +28,7 @@ export default function TeamSection() {
   const { team } = Strings;
 
   return (
-    <section className="overflow-x-clip bg-white px-[20px] pt-[96px] lg:px-0 lg:pt-[126px]">
+    <section className="overflow-x-clip bg-white px-[20px] pt-[96px] pb-[140px] lg:px-0 lg:pt-[126px] lg:pb-[180px]">
       <div className="mx-auto flex max-w-[1440px] flex-col gap-[48px] lg:flex-row lg:items-start lg:justify-between lg:px-[48px] xl:pr-[191px] xl:pl-[130px]">
         <div className="min-w-0 lg:flex-1 lg:pt-[clamp(80px,11vw,153px)]">
           <h2 className="max-w-[440px] font-heading text-[36px] leading-[40px] font-medium tracking-[-0.02em] text-heading lg:text-[52px] lg:leading-[54px]">
