@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Button from "@/components/Button";
-import SectionLabel from "@/components/about/SectionLabel";
+import PillarsHeading from "@/components/services/PillarsHeading";
 import Images from "@/utils/Images";
 import Strings from "@/utils/Strings";
 
@@ -13,6 +13,12 @@ const LAYOUT = [
   { dark: false, imageRight: true, imageWidth: 638, bodyWidth: 462, servicesGap: 42, buttonGap: 24 },
   { dark: true, imageRight: false, imageWidth: 619, bodyWidth: 480, servicesGap: 68, buttonGap: 30 },
 ] as const;
+
+// Stacking cards: on desktop screens tall enough to hold a whole card, each card sticks just under
+// the navbar, a little lower than the one before, so the next card slides up over it and the
+// earlier cards' top edges stay visible as a stack.
+const STACK_TOP = 110;
+const STACK_STEP = 16;
 
 function Bullet() {
   return (
@@ -27,12 +33,7 @@ export default function PillarsSection() {
 
   return (
     <section className="bg-white px-[20px] pt-[96px] lg:px-0 lg:pt-[234px]">
-      <div className="text-center">
-        <SectionLabel text={pillars.label} />
-        <h2 className="mt-[8px] font-heading text-[36px] leading-[40px] font-medium tracking-[-0.02em] text-heading lg:mt-[9px] lg:text-[54px] lg:tracking-[-0.04em] lg:leading-[55px]">
-          {pillars.title}
-        </h2>
-      </div>
+      <PillarsHeading label={pillars.label} title={pillars.title} />
 
       <ul className="mx-auto mt-[48px] flex max-w-[1312px] flex-col gap-[24px] lg:mt-[89px] lg:ml-[calc(50%-652px)] lg:gap-[46px]">
         {pillars.items.map((pillar, i) => {
@@ -40,9 +41,10 @@ export default function PillarsSection() {
           return (
             <li
               key={pillar.title}
-              className={`flex flex-col gap-[32px] rounded-[20px] p-[16px] pb-[40px] lg:h-[679px] lg:gap-0 lg:first:mb-[4px] lg:p-0 ${
+              className={`flex flex-col gap-[32px] rounded-[20px] p-[16px] pb-[40px] lg:h-[679px] lg:gap-0 lg:first:mb-[4px] lg:p-0 lg:[@media(min-height:860px)]:sticky lg:[@media(min-height:860px)]:top-[var(--stack-top)] lg:[@media(min-height:860px)]:shadow-[0_-24px_48px_-28px_rgba(0,0,0,0.45)] ${
                 layout.dark ? "bg-black" : "bg-pillar-gray"
               } ${layout.imageRight ? "lg:flex-row-reverse lg:justify-between lg:pr-[30px]" : "lg:flex-row lg:pl-[25px]"}`}
+              style={{ "--stack-top": `${STACK_TOP + i * STACK_STEP}px` } as React.CSSProperties}
             >
               <div
                 className="relative aspect-[619/632] w-full shrink-0 overflow-hidden rounded-[16px] lg:mt-[25px] lg:h-[632px] lg:w-[var(--pillar-image)] lg:aspect-auto"

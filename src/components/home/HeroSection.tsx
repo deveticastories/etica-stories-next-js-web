@@ -100,7 +100,7 @@ function HeroVideo({ label }: { label?: string }) {
 function HeroStat({ className = "" }: { className?: string }) {
   const { hero } = Strings;
   return (
-    <div className={`relative z-20 flex-col items-center lg:mb-[-9px] lg:w-[160px] lg:shrink-0 lg:items-start ${className}`}>
+    <div className={`hero-fade relative z-20 flex-col items-center lg:mb-[-9px] lg:w-[160px] lg:shrink-0 lg:items-start ${className}`}>
       <TrendUpIcon className="h-[25px] w-[46px]" />
       <p className="hero-ink mt-[clamp(16px,3.4vh,33px)] text-[64px] leading-[64px] font-normal tracking-[-0.03em] [--ink:#171717] lg:text-[clamp(52px,7vh,72px)] lg:leading-none">
         {hero.statValue}
@@ -115,7 +115,7 @@ function HeroStat({ className = "" }: { className?: string }) {
 function HeroIntro({ className = "" }: { className?: string }) {
   const { hero } = Strings;
   return (
-    <div className={`relative z-20 flex-col items-center text-center lg:mb-[-3px] lg:w-[215px] lg:shrink-0 lg:items-start lg:text-left ${className}`}>
+    <div className={`hero-fade relative z-20 flex-col items-center text-center lg:mb-[-3px] lg:w-[215px] lg:shrink-0 lg:items-start lg:text-left ${className}`}>
       <p className="hero-ink max-w-[215px] text-[16px] leading-[24px] font-light tracking-[-0.01em] [--ink:#585151]">
         {hero.description}
       </p>
@@ -188,6 +188,7 @@ export default function HeroSection() {
       media.style.borderRadius = `${lerp(START_RADIUS, END_RADIUS, t)}px`;
       overlay.style.opacity = `${t * MAX_OVERLAY}`;
       sticky.style.setProperty("--hero-p", `${t}`);
+      sticky.toggleAttribute("data-expanded", t > 0.4);
     };
 
     const schedule = () => {
@@ -204,6 +205,7 @@ export default function HeroSection() {
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
       sticky.style.removeProperty("--hero-p");
+      sticky.removeAttribute("data-expanded");
     };
   }, [animated, mode]);
 
@@ -231,7 +233,7 @@ export default function HeroSection() {
             </div>
           )}
 
-          <div className="relative z-20 px-[20px] text-center">
+          <div className="hero-fade relative z-20 px-[20px] text-center">
             {/* The eyebrow is the page's H1 (the SEO main heading); the large title below is visual. */}
             <h1 className="hero-ink text-[14px] leading-[22px] font-light [--ink:#828282] lg:text-[15px]">
               {hero.eyebrow}
@@ -240,6 +242,23 @@ export default function HeroSection() {
               {hero.titleLine1} <span className="text-primary">{hero.titleLine2}</span>
             </h2>
           </div>
+
+          {/* Fully expanded: title and intro line sit over the video, bottom centre. Visual copy of the headings above. */}
+          {animated && (
+            <div
+              aria-hidden
+              className="hero-reveal pointer-events-none absolute inset-x-0 bottom-[clamp(40px,9vh,96px)] z-20 px-[20px] text-center text-white"
+            >
+              <p className="mx-auto max-w-[1000px] font-heading text-[30px] leading-[1.1] font-medium tracking-[-0.02em] text-balance sm:text-[40px] lg:text-[clamp(40px,7vh,64px)]">
+                {hero.titleLine1}
+                <br className="hidden sm:block" />
+                {hero.titleLine2}
+              </p>
+              <p className="mx-auto mt-[16px] max-w-[720px] text-[14px] leading-[22px] font-light text-white/90 capitalize sm:text-[16px] lg:mt-[clamp(14px,2.4vh,24px)] lg:text-[17px] lg:leading-[26px]">
+                {hero.eyebrow}
+              </p>
+            </div>
+          )}
 
           <div className="hero-row mx-auto mt-[32px] flex w-full max-w-[1440px] flex-col items-center px-[20px] lg:mt-[clamp(20px,5.3vh,52px)] lg:min-h-0 lg:flex-1 lg:flex-row lg:items-end lg:justify-between lg:gap-[32px] lg:pr-[clamp(32px,8vw,158px)] lg:pl-[clamp(32px,10vw,190px)]">
             <HeroStat className="hidden lg:flex" />

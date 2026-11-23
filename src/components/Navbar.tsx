@@ -16,7 +16,7 @@ export default function Navbar({ activeHref = "/" }: NavbarProps) {
 
   return (
     <header className="fixed top-[16px] left-1/2 z-50 w-[calc(100%-32px)] max-w-[1110px] -translate-x-1/2 lg:top-[37px]">
-      <nav className="flex h-[64px] items-center rounded-full bg-white pr-[12px] pl-[24px] shadow-[0_6px_30px_rgba(0,0,0,0.08)] lg:h-[73px] lg:pr-[18px] lg:pl-[38px]">
+      <nav className="flex h-[64px] items-center rounded-full border border-white/40 bg-white/15 shadow-[inset_0_1px_1px_rgba(255,255,255,0.45),0_8px_32px_rgba(0,0,0,0.12)] backdrop-blur-[18px] backdrop-saturate-150 pr-[12px] pl-[24px] lg:h-[73px] lg:pr-[18px] lg:pl-[38px]">
         <Link href="/" aria-label={Strings.appName} className="shrink-0">
           <Logo className="h-[32px] w-auto lg:h-[36px]" />
         </Link>
@@ -52,7 +52,7 @@ export default function Navbar({ activeHref = "/" }: NavbarProps) {
       </nav>
 
       {open && (
-        <div className="mt-[8px] rounded-[20px] bg-white p-[20px] shadow-[0_6px_30px_rgba(0,0,0,0.08)] lg:hidden">
+        <div className="mt-[8px] rounded-[20px] border border-white/40 bg-white/15 shadow-[inset_0_1px_1px_rgba(255,255,255,0.45),0_8px_32px_rgba(0,0,0,0.12)] backdrop-blur-[18px] backdrop-saturate-150 p-[20px] lg:hidden">
           <ul className="flex flex-col gap-[14px]">
             {Strings.nav.links.map((link) => (
               <li key={link.label}>

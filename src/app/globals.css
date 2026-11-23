@@ -45,17 +45,21 @@
   --color-icon-red: #a50012;
   --color-strategy-watermark: #e9e7e8;
 
-  /* "Join our team" badge on the home Team section */
-  --animate-badge-spin: badge-spin 18s linear infinite;
+  /* Drifting glow behind the home Team section */
+  --animate-team-glow: team-glow 16s ease-in-out infinite alternate;
 
-  @keyframes badge-spin {
+  @keyframes team-glow {
+    from {
+      transform: translate3d(-4%, -3%, 0) scale(1);
+    }
     to {
-      transform: rotate(360deg);
+      transform: translate3d(4%, 3%, 0) scale(1.08);
     }
   }
 
   --font-sans: var(--font-dm-sans);
   --font-heading: var(--font-space-grotesk);
+  --font-display: var(--font-anton);
 }
 
 html {
@@ -106,6 +110,21 @@ body {
   }
 }
 
+/* Hero scroll-expand: the resting text fades out as the video grows, then the overlay title fades
+   in at the bottom once it is nearly full screen. */
+.hero-fade {
+  opacity: clamp(0, 1 - var(--hero-p, 0) * 2.5, 1);
+}
+
+[data-expanded] .hero-fade {
+  pointer-events: none;
+}
+
+.hero-reveal {
+  opacity: clamp(0, (var(--hero-p, 0) - 0.6) * 2.5, 1);
+  transform: translateY(calc((1 - var(--hero-p, 0)) * 40px));
+}
+
 /* Hero video slot. Mobile: full width, capped so title + video fit a landscape phone.
    Desktop: the row is a size container, so the video takes whatever height is left between the
    title and the bottom of the hero — it shrinks on short laptop screens instead of pushing content off-screen. */
@@ -127,7 +146,7 @@ body {
 
   .hero-slot {
     max-width: none;
-    width: min(660px, 100cqw - 440px, 100cqh * 486 / 273);
+    width: min(1000px, 100cqw - 440px, 100cqh * 486 / 273);
   }
 }
 

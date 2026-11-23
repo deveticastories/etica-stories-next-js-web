@@ -1,4 +1,4 @@
-import { DM_Sans, Space_Grotesk } from "next/font/google";
+import { Anton, Barlow, DM_Sans, Space_Grotesk } from "next/font/google";
 
 // Headings
 export const spaceGrotesk = Space_Grotesk({
@@ -15,8 +15,24 @@ export const dmSans = DM_Sans({
   axes: ["opsz"],
 });
 
+// Condensed display type for the team section's oversized headline and card titles
+export const anton = Anton({
+  variable: "--font-anton",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+// Squared, DIN-style type for the oversized "ETICA STORIES" footer wordmark
+export const barlow = Barlow({
+  variable: "--font-barlow",
+  subsets: ["latin"],
+  weight: "600",
+});
+
 const Fonts = {
   heading: "var(--font-space-grotesk)",
+  display: "var(--font-anton)",
+  wordmark: "var(--font-barlow)",
   body: "var(--font-dm-sans)",
   serif: "'Times New Roman', Times, serif",
   weight: {

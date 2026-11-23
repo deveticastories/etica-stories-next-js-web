@@ -3,6 +3,12 @@ const Images = {
   hero: "/images/hero.jpg",
   mission: "/images/mission.jpg",
   team: "/images/team.jpg",
+  // One photo per Strings.team.members entry, same order (443 × 536 portrait).
+  teamMembers: [
+    "/images/team/anzeer-t-k.jpg",
+    "/images/team/reshma-t-r.jpg",
+    "/images/team/sanal.jpg",
+  ],
   ctaLaptop: "/images/cta-laptop.jpg",
 
   about: {

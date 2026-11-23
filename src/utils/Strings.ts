@@ -16,10 +16,11 @@ const Strings = {
   },
 
   hero: {
-    eyebrow: "Your Digital Marketing Agency for Bold Brand Growth",
-    titleLine1:
-      "We empower businesses across Kerala and the UAE through strategic marketing, innovative design,",
-    titleLine2: "impactful branding and engaging content.",
+    // eyebrow: "Your Digital Marketing Agency for Bold Brand Growth",
+    eyebrow:
+      "We empower businesses across Kerala and the UAE through strategic marketing, innovative design, impactful branding and engaging content.",
+    titleLine1: "Your Digital Marketing Agency ",
+    titleLine2: "for Bold Brand Growth",
     statValue: "360°",
     statLabel: "Creative Thinking",
     description:
@@ -28,27 +29,10 @@ const Strings = {
   },
 
   about: {
-    title: "No Matter Which Industry You Belong To, Your Success Is Our Priority",
+    title:
+      "No Matter Which Industry You Belong To, Your Success Is Our Priority",
     body: "We are a Digital Marketing Agency in Kerala and the UAE that provides the support you need to build your brand, create effective marketing strategies, and develop technology-driven solutions that deliver results. Our expert team brings more than 10 years of experience in brand storytelling, custom software development, and beyond. You are at any of these places in Kochi, Calicut, Dubai, or Abu Dhabi, and we are here to help your business grow.",
-    // Scroll scene after the statement: one big word at a time, each with its own 3D object.
-    pillars: [
-      {
-        word: "Brand",
-        body: "Strategy-led identities that make your business instantly recognisable and impossible to ignore.",
-        href: "/services",
-      },
-      {
-        word: "Build",
-        body: "Websites, apps and custom software engineered to perform, scale and grow with your business.",
-        href: "/services",
-      },
-      {
-        word: "Market",
-        body: "Data-driven campaigns that put your brand in front of the right audience and turn attention into growth.",
-        href: "/services",
-      },
-    ],
-    learnMore: "Learn more",
+    showreelLabel: "Etica Stories showreel",
   },
 
   mission: {
@@ -127,9 +111,16 @@ const Strings = {
 
   team: {
     title: "The Experts Behind Your Success",
+    // The headline is revealed line by line, each line sliding up out of its own mask.
+    titleLines: ["The Experts", "Behind Your Success"],
     body: "Connect with the creative thinkers and the technology experts making bold ideas and real impact.",
     cta: "Let's Talk",
-    badge: "JOIN OUR TEAM · JOIN OUR TEAM · ",
+    // Photos live in Images.teamMembers, in the same order.
+    members: [
+      { name: "Anzeer T K", role: "Chief Executive Officer (CEO)" },
+      { name: "Reshma T R", role: "Tech Director" },
+      { name: "Sanal", role: "Software Developer" },
+    ],
   },
 
   faq: {

@@ -2,6 +2,7 @@
 const Videos = {
   intro: "/videos/etica-logo.mp4",
   heroPromo: "/videos/etica-promo.mp4",
+  showreel: "/videos/etica-showreel.mp4",
 } as const;
 
 export default Videos;

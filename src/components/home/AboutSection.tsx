@@ -1,26 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import Strings from "@/utils/Strings";
+import Videos from "@/utils/Videos";
 import { isLowEndDevice } from "@/utils/device";
-import IridescentObject, { type ObjectState } from "@/components/home/IridescentObject";
 
 // How many viewport heights the scene stays pinned for.
-const PIN_SCREENS = 6;
+const PIN_SCREENS = 4;
 
 // Timeline, as fractions of the pinned scroll.
-const REVEAL_END = 0.24; // statement words light up
-const STATEMENT_OUT: [number, number] = [0.25, 0.32];
-const WORD_STARTS = [0.29, 0.52, 0.75]; // each big word blurs in here (and the previous one out)
-const WORD_FADE = 0.07;
-
-// Where each word's object floats, as a fraction of that word's box (x, y = its centre).
-const ANCHORS = [
-  { x: 0.98, y: 0.12 },
-  { x: -0.06, y: 0.5 },
-  { x: 0.9, y: -0.02 },
-];
+const REVEAL_END = 0.4; // statement words light up
+const STATEMENT_OUT: [number, number] = [0.42, 0.52];
+const VIDEO_IN: [number, number] = [0.46, 0.6]; // full-screen video fades in, then holds
 
 // Statement words start dim and light up as the scroll reaches them.
 const WORD_DIM = "#3a3a3a";
@@ -42,27 +33,6 @@ const blur = (amount: number, max: number) => {
   return px > 0 ? `blur(${px}px)` : "none";
 };
 
-function ArrowRight() {
-  return (
-    <svg viewBox="0 0 16 10" className="h-[9px] w-[14px]" fill="none" stroke="currentColor" strokeWidth={1.2} aria-hidden>
-      <path d="M0 5h15M11 1l4 4-4 4" />
-    </svg>
-  );
-}
-
-function LearnMore({ href, word }: { href: string; word: string }) {
-  return (
-    <Link
-      href={href}
-      aria-label={`${Strings.about.learnMore} about ${word}`}
-      className="mt-[18px] inline-flex items-center gap-[10px] text-[13px] tracking-[0.01em] text-white/80 transition-colors hover:text-white"
-    >
-      {Strings.about.learnMore}
-      <ArrowRight />
-    </Link>
-  );
-}
-
 // Splits copy into word spans the scroll can light up one by one.
 function Words({ text, offset }: { text: string; offset: number }) {
   return text.split(" ").map((word, i) => (
@@ -72,8 +42,29 @@ function Words({ text, offset }: { text: string; offset: number }) {
   ));
 }
 
+// Plays only while on screen (and, in the pinned scene, once the card has started to appear).
+// Muted + playsInline are required for inline playback on iOS; React doesn't always reflect
+// `muted` as an attribute, so set it on the element.
+function useShowreel(ref: React.RefObject<HTMLVideoElement | null>, mounted = true) {
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+    video.muted = true;
+    const observer = new IntersectionObserver(([entry]) => {
+      video.dataset.onScreen = entry.isIntersecting ? "1" : "";
+      if (entry.isIntersecting && video.dataset.wanted !== "0") video.play().catch(() => {});
+      else video.pause();
+    });
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, [ref, mounted]);
+}
+
 function StaticAbout() {
   const { about } = Strings;
+  const videoRef = useRef<HTMLVideoElement>(null);
+  useShowreel(videoRef);
+
   return (
     <section className="bg-black px-[20px] py-[100px] lg:py-[140px]">
       <div className="mx-auto max-w-[1100px]">
@@ -83,14 +74,17 @@ function StaticAbout() {
         <p className="mt-[24px] text-[19px] leading-[30px] font-light tracking-[-0.02em] text-white/80 lg:mt-[32px] lg:text-[26px] lg:leading-[40px]">
           {about.body}
         </p>
-        <div className="mt-[80px] grid gap-[64px] md:grid-cols-3 md:gap-[40px]">
-          {about.pillars.map((pillar) => (
-            <div key={pillar.word}>
-              <h3 className="text-[64px] leading-none font-extralight tracking-[-0.04em] text-white">{pillar.word}</h3>
-              <p className="mt-[18px] max-w-[320px] text-[15px] leading-[23px] font-light text-white/75">{pillar.body}</p>
-              <LearnMore href={pillar.href} word={pillar.word} />
-            </div>
-          ))}
+        <div className="relative mt-[56px] aspect-video overflow-hidden rounded-[16px] bg-[#111] lg:mt-[80px]">
+          <video
+            ref={videoRef}
+            src={Videos.showreel}
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            aria-label={about.showreelLabel}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
         </div>
       </div>
     </section>
@@ -102,9 +96,8 @@ export default function AboutSection() {
   const outerRef = useRef<HTMLElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
   const statementRef = useRef<HTMLDivElement>(null);
-  const objectWrapRef = useRef<HTMLDivElement>(null);
-  const pillarRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const objectState = useRef<ObjectState>({ shape: 0, spin: 0, alpha: 0 });
+  const mediaRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [animated, setAnimated] = useState(false);
 
   const titleWords = about.title.split(" ").length;
@@ -124,33 +117,19 @@ export default function AboutSection() {
     };
   }, []);
 
+  useShowreel(videoRef, animated);
+
   useEffect(() => {
     const outer = outerRef.current;
     const sticky = stickyRef.current;
     const statement = statementRef.current;
-    const objectWrap = objectWrapRef.current;
-    const pillars = pillarRefs.current;
-    if (!animated || !outer || !sticky || !statement || !objectWrap || pillars.some((el) => !el)) return;
+    const media = mediaRef.current;
+    const video = videoRef.current;
+    if (!animated || !outer || !sticky || !statement || !media || !video) return;
 
     const words = Array.from(statement.querySelectorAll<HTMLElement>("[data-word]"));
     let lit = 0;
     let frame = 0;
-    // Object anchor per word, in the sticky box's coordinates. Measured from layout (offsets
-    // ignore the transforms applied below), so it only changes on resize.
-    let anchors: { x: number; y: number }[] = [];
-    let objectSize = 0;
-
-    const measure = () => {
-      objectSize = objectWrap.offsetWidth;
-      anchors = pillars.map((block, i) => {
-        const inner = block!.firstElementChild as HTMLElement;
-        const word = inner.firstElementChild as HTMLElement;
-        return {
-          x: inner.offsetLeft + word.offsetLeft + word.offsetWidth * ANCHORS[i].x,
-          y: inner.offsetTop + word.offsetTop + word.offsetHeight * ANCHORS[i].y,
-        };
-      });
-    };
 
     const render = () => {
       frame = 0;
@@ -171,66 +150,31 @@ export default function AboutSection() {
       statement.style.transform = `translateY(${-out * 50}px)`;
       setShown(statement, out < 1);
 
-      // 2. Big words cross-fade through a blur; each one's copy follows a beat later.
-      let shape = 0;
-      pillars.forEach((block, i) => {
-        const inP = seg(p, WORD_STARTS[i], WORD_STARTS[i] + WORD_FADE);
-        const next = WORD_STARTS[i + 1];
-        const outP = next === undefined ? 0 : seg(p, next, next + WORD_FADE);
-        const vis = inP * (1 - outP);
-        const inner = block!.firstElementChild as HTMLElement;
-        const word = inner.firstElementChild as HTMLElement;
-        const copy = inner.lastElementChild as HTMLElement;
-        word.style.opacity = `${vis}`;
-        word.style.filter = blur(1 - vis, 16);
-        word.style.transform = `scale(${lerp(0.94, 1, inP) * lerp(1, 1.05, outP)})`;
-        const copyIn = seg(p, WORD_STARTS[i] + 0.03, WORD_STARTS[i] + 0.03 + WORD_FADE);
-        const copyVis = copyIn * (1 - outP);
-        copy.style.opacity = `${copyVis}`;
-        copy.style.filter = blur(1 - copyVis, 8);
-        copy.style.transform = `translateY(${(1 - copyIn) * 14}px)`;
-        setShown(block!, vis > 0);
-        if (i > 0) shape += inP;
-      });
+      // 2. The video fades in full screen, settling from a slight zoom.
+      const appear = seg(p, VIDEO_IN[0], VIDEO_IN[1]);
+      media.style.opacity = `${appear}`;
+      video.style.transform = `scale(${lerp(1.08, 1, appear)})`;
+      setShown(media, appear > 0);
 
-      // 3. One object follows the words: it flies between their anchors while morphing shape.
-      const appear = seg(p, WORD_STARTS[0], WORD_STARTS[0] + WORD_FADE);
-      const from = Math.min(Math.floor(shape), anchors.length - 1);
-      const to = Math.min(from + 1, anchors.length - 1);
-      const f = shape - from;
-      const a = anchors[from];
-      const b = anchors[to];
-      if (a && b) {
-        // A dip in scale mid-morph keeps the shape change from looking like a glitch.
-        const scale = lerp(0.55, 1, appear) * (1 - 0.18 * Math.sin(Math.PI * f));
-        const x = lerp(a.x, b.x, f) - objectSize / 2;
-        const y = lerp(a.y, b.y, f) - objectSize / 2 - (1 - appear) * 60;
-        objectWrap.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${scale})`;
-      }
-      objectState.current.shape = shape;
-      objectState.current.spin = p * Math.PI * 3;
-      objectState.current.alpha = appear;
-      setShown(objectWrap, appear > 0);
+      const wanted = appear > 0;
+      video.dataset.wanted = wanted ? "1" : "0";
+      if (wanted && video.paused && video.dataset.onScreen) video.play().catch(() => {});
+      else if (!wanted && !video.paused) video.pause();
     };
 
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(render);
     };
-    const onResize = () => {
-      measure();
-      schedule();
-    };
 
-    measure();
     render();
     window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", onResize);
-    document.fonts?.ready.then(onResize);
+    window.addEventListener("resize", schedule);
+    document.fonts?.ready.then(schedule);
 
     return () => {
       cancelAnimationFrame(frame);
       window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", onResize);
+      window.removeEventListener("resize", schedule);
     };
   }, [animated]);
 
@@ -251,33 +195,18 @@ export default function AboutSection() {
           </div>
         </div>
 
-        {/* Big words, one at a time */}
-        {about.pillars.map((pillar, i) => (
-          <div
-            key={pillar.word}
-            ref={(el) => {
-              pillarRefs.current[i] = el;
-            }}
-            className="invisible absolute inset-0 flex items-center justify-center pt-[40px]"
-          >
-            <div className="relative">
-              <h3 className="text-[clamp(110px,22vh,210px)] leading-[0.95] font-extralight tracking-[-0.045em] text-white opacity-0">
-                {pillar.word}
-              </h3>
-              <div className="mt-[clamp(14px,2.6vh,26px)] ml-[clamp(20px,3.6vh,40px)] max-w-[300px] opacity-0">
-                <p className="text-[15px] leading-[23px] font-light text-white/80">{pillar.body}</p>
-                <LearnMore href={pillar.href} word={pillar.word} />
-              </div>
-            </div>
-          </div>
-        ))}
-
-        {/* The 3D object, drawn above the words like the glass sits in front of the type. */}
-        <div
-          ref={objectWrapRef}
-          className="pointer-events-none invisible absolute top-0 left-0 size-[clamp(260px,44vh,460px)] will-change-transform"
-        >
-          <IridescentObject stateRef={objectState} />
+        {/* Showreel, full screen */}
+        <div ref={mediaRef} className="invisible absolute inset-0 overflow-hidden bg-black opacity-0">
+          <video
+            ref={videoRef}
+            src={Videos.showreel}
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            aria-label={about.showreelLabel}
+            className="absolute inset-0 h-full w-full object-cover will-change-transform"
+          />
         </div>
       </div>
     </section>
