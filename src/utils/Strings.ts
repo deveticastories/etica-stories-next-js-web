@@ -119,7 +119,6 @@ const Strings = {
     members: [
       { name: "Anzeer T K", role: "Chief Executive Officer (CEO)" },
       { name: "Reshma T R", role: "Tech Director" },
-      { name: "Sanal", role: "Software Developer" },
     ],
   },
 
@@ -520,6 +519,13 @@ const Strings = {
     phone: "+91 97456 30104",
     copyright: "© 2025 Etica Stories",
     watermark: "ETICA STORIES",
+  },
+
+  whatsapp: {
+    // Digits only, with country code, as wa.me expects.
+    number: "919745630104",
+    message: "Hi Etica Stories, I'd like to know more about your services.",
+    label: "Chat with us on WhatsApp",
   },
 } as const;
 

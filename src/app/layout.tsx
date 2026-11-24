@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import SmoothScroll from "@/components/SmoothScroll";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import { dmSans, spaceGrotesk, anton, barlow } from "@/utils/Fonts";
 import Strings from "@/utils/Strings";
 import "./globals.css";
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <SmoothScroll />
         {children}
+        <WhatsAppButton />
       </body>
     </html>
   );

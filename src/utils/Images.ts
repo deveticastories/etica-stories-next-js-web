@@ -7,7 +7,6 @@ const Images = {
   teamMembers: [
     "/images/team/anzeer-t-k.jpg",
     "/images/team/reshma-t-r.jpg",
-    "/images/team/sanal.jpg",
   ],
   ctaLaptop: "/images/cta-laptop.jpg",
 
